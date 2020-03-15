@@ -74,16 +74,16 @@ App.getDocument('model').getObject('DatumPoint').recompute()
 Gui.getDocument('model').resetEdit()
 App.Console.PrintMessage('point placement:')
 App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
-App.Console.PrintMessage('moving object:')
-App.getDocument("model").Part__Feature.Placement=App.Placement(App.Vector(-839,599,-474), App.Rotation(App.Vector(0.991233,0.126557,0.0379443),19.67), App.Vector(0,0,0))
-App.getDocument('model').getObject('DatumPoint').recompute()
-Gui.getDocument('model').resetEdit()
+# App.Console.PrintMessage('moving object:')
+# App.getDocument("model").Part__Feature.Placement=App.Placement(App.Vector(-839,599,-474), App.Rotation(App.Vector(0.991233,0.126557,0.0379443),19.67), App.Vector(0,0,0))
+# App.getDocument('model').getObject('DatumPoint').recompute()
+# Gui.getDocument('model').resetEdit()
 App.getDocument('model').getObject('DatumPoint').recompute()
 App.Console.PrintMessage('point placement:')
 App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
 
 positions = []
-steps = 1000
+steps = 2
 x = 1
 for i in range(steps):
 	x += 1

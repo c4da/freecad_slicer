@@ -7,9 +7,11 @@ import FreeCADGui as Gui
 import ImportGui
 import Show
 
+import numpy as np
 
-def calculate(modelPath, plane_data, origin_offset):
-    modelPath = '/home/cada/python3/freecad/predni.stp'
+
+def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
+    # modelPath = '/home/cada/python3/freecad/predni.stp'
 
     App.newDocument("model")
     App.setActiveDocument("model")
@@ -75,36 +77,61 @@ def calculate(modelPath, plane_data, origin_offset):
     # point.MapMode = 'ProximityPoint1'
     App.getDocument('model').getObject('DatumPoint').recompute()
     Gui.getDocument('model').resetEdit()
-    App.Console.PrintMessage('point placement:')
-    App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
-    App.Console.PrintMessage('moving object:')
-    App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(-839, 599, -474),
-                                                                     App.Rotation(App.Vector(0.991233, 0.126557, 0.0379443),
-                                                                                  19.67), App.Vector(0, 0, 0))
-    App.getDocument('model').getObject('DatumPoint').recompute()
+    # App.Console.PrintMessage('point placement:')
+    # App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
+    # App.Console.PrintMessage('moving object:')
+
+    parse_origin_offset = origin_offset.split(',')
+    origin_offset = [float(x) for x in parse_origin_offset]
+
+    # App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(-839, 599, -474),
+    #                                                                  App.Rotation(App.Vector(0.991233, 0.126557, 0.0379443),
+    #                                                                               19.67), App.Vector(0, 0, 0))
+    # App.getDocument('model').getObject('DatumPoint').recompute()
     Gui.getDocument('model').resetEdit()
     App.getDocument('model').getObject('DatumPoint').recompute()
-    App.Console.PrintMessage('point placement:')
-    App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
+    # App.Console.PrintMessage('point placement:')
+    # App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
 
     positions = []
-    steps = 1000
-    x = 1
-    for i in range(steps):
-        x += 1
-        # App.Console.PrintMessage('moving object')
-        App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(-720 - x, 599, -474), App.Rotation(
-            App.Vector(0.991233, 0.126557, 0.0379443), 19.67), App.Vector(0, 0, 0))
-        App.getDocument('model').getObject('DatumPoint').recompute()
-        Gui.getDocument('model').resetEdit()
-        App.getDocument('model').getObject('DatumPoint').recompute()
-        # App.Console.PrintMessage('point placement:')
-        v = App.getDocument('model').getObject('DatumPoint').Placement.Base
-        # App.Console.PrintMessage()
-        if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
-            positions.append([v.x, v.y, v.z])
-        else:
-            positions.append([None, None, None])
+    previous_plane = np.array([0, 0, 0])
+
+    # for i in range(steps):
+    # first_pass = False
+    measuring_position = origin_offset
+    itemVoff_sum = 0
+    for plane in planes:
+        first_pass = False
+        itemHoff, itemVoff, x = plane
+        plane = plane + previous_plane
+        x = plane[2]
+        previous_plane = plane
+        itemVoff_sum += itemVoff
+        while True:
+            App.Console.PrintMessage((first_pass, measuring_position[0] - x))
+            # measuring_position[1] = measuring_position[1] - itemVoff_sum
+            # App.Console.PrintMessage('moving object')
+            App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(measuring_position[0] - x, measuring_position[1], measuring_position[2]), App.Rotation(
+                App.Vector(0, 0, 0), 1), App.Vector(0, 0, 0))
+            App.getDocument('model').getObject('DatumPoint').recompute()
+            Gui.getDocument('model').resetEdit()
+            # App.getDocument('model').getObject('DatumPoint').recompute()
+            # App.Console.PrintMessage('point placement:')
+            v = App.getDocument('model').getObject('DatumPoint').Placement.Base
+            # App.Console.PrintMessage()
+            App.Console.PrintMessage((v.x, v.y, v.z))
+            if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
+                positions.append([measuring_position[0] - x, v.y, measuring_position[2]])
+                first_pass = True
+            else:
+                # positions.append([None, None, None])
+                if first_pass == True:
+                    break
+
+            x += 1
+        measuring_position[2] -=itemVoff_sum
+
+
 
     for i, char in enumerate(''.join(reversed(modelPath))):
         if char == '/' or char == "\"":

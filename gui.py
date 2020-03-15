@@ -103,7 +103,7 @@ class myForm(Form):
 
     def createTable(self, layout):
         self.tableWidget = QtGui.QTableWidget()
-        self.tableWidget.setRowCount(24)
+        self.tableWidget.setRowCount(2)
         self.tableWidget.setColumnCount(3)
         labels = ['horizontal offset', 'vertical offset', 'increment']
         self.tableWidget.setHorizontalHeaderLabels(labels)
@@ -161,8 +161,8 @@ class myForm(Form):
         self.tableWidget.removeRow(1)
 
     def labelWidgets(self):
-        self.setText(self.linePath, "C:\\")
-        self.setText(self.lineEdit, "0.0, 0.0, 0.0")
+        self.setText(self.linePath, "/home/cada/python3/freecad/predni.stp")
+        self.setText(self.lineEdit, "-600, 599, -700")
         # self.setText(self.checkBox, "CheckBox")
         # self.setText(self.radioButton, "RadioButton")
 
@@ -178,9 +178,7 @@ class myForm(Form):
         fi.calculate(modelPath, data, origin_offset)
 
 
-
-
-
-myWindow = myForm("test window", 400, 300)
-myWindow.show()
+if __name__ == "__main__":
+    myWindow = myForm("test window", 400, 300)
+    myWindow.show()
 
