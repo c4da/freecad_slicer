@@ -161,8 +161,8 @@ class myForm(Form):
         self.tableWidget.removeRow(1)
 
     def labelWidgets(self):
-        self.setText(self.linePath, "/home/cada/python3/freecad/predni.stp")
-        self.setText(self.lineEdit, "-600, 599, -700")
+        self.setText(self.linePath, "/home/cada/python3/freecad/MAKETA.stp")
+        self.setText(self.lineEdit, "375, 30, 700")
         # self.setText(self.checkBox, "CheckBox")
         # self.setText(self.radioButton, "RadioButton")
 
