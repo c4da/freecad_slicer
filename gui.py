@@ -103,7 +103,7 @@ class myForm(Form):
 
     def createTable(self, layout):
         self.tableWidget = QtGui.QTableWidget()
-        self.tableWidget.setRowCount(2)
+        self.tableWidget.setRowCount(3)
         self.tableWidget.setColumnCount(3)
         labels = ['horizontal offset', 'vertical offset', 'increment']
         self.tableWidget.setHorizontalHeaderLabels(labels)
@@ -162,7 +162,7 @@ class myForm(Form):
 
     def labelWidgets(self):
         self.setText(self.linePath, "/home/cada/python3/freecad/MAKETA.stp")
-        self.setText(self.lineEdit, "375, 30, 700")
+        self.setText(self.lineEdit, "700, 30, 375")
         # self.setText(self.checkBox, "CheckBox")
         # self.setText(self.radioButton, "RadioButton")
 

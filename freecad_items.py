@@ -63,6 +63,28 @@ def showOnlyGlassObject(documentName="model"):
             else:
                 pass
 
+def formatPositions(positions, savePath):
+    # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
+    # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
+    lines = dict()
+    for pos in positions:
+        point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
+        if pos[1] not in lines:
+            lines[pos[0]] = list()
+            lines[pos[0]].append(point)
+        else:
+            lines[pos[0]].append(point)
+
+    levels = lines.keys()
+    levels = levels.sort()
+
+    f = open(savePath + 'saved_data_format.txt', 'w')
+    for level in levels:
+        f.write(str(level)+';')
+        f.write(str(lines[level])[1:-1]+'\n')
+    f.close()
+
+
 
 
 def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
@@ -156,62 +178,82 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
 
     # for i in range(steps):
     # first_pass = False
-    measuring_position = origin_offset  # 375, 30, 700
+    # measuring_position = origin_offset  # 375, 30, 700
     itemVoff_sum = 0
 
     # glass_obj_rot = glass_obj.Placement.Rotation.toEuler()
     # glass_obj_base = (glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z)
-    starting_pos = glass_obj.Placement.Base.z - 1000
+    starting_pos = glass_obj.Placement.Base.z - origin_offset[2]
+    glass_obj.Placement.Base.x = glass_obj.Placement.Base.x + origin_offset[2]
+
+
 
     for plane in planes:
         first_pass = False
         itemHoff, itemVoff, inc = plane
         plane = plane + previous_plane
+        measuring_position = origin_offset # 375, 30, 700
+        measuring_position[0] = measuring_position[0] - starting_pos
         # x = 0
         previous_plane = plane
         itemVoff_sum += itemVoff
         glass_obj.Placement.Base.z = starting_pos
-        App.Console.PrintMessage('moving object')
-        x = 100
+        glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - itemVoff_sum
+        App.Console.PrintMessage('\n')
+        App.Console.PrintMessage('new plane, itemVoff_sum')
+        App.Console.PrintMessage('\n')
+        x = inc
         stepSum = 0
+        # App.ActiveDocument.recompute()
 
         while True:
             # App.Console.PrintMessage((first_pass, measuring_position[0], measuring_position[1]))
             # measuring_position[1] = measuring_position[1] - itemVoff_sum
-            App.Console.PrintMessage(
-                (glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
+            # measuring_position[0] = measuring_position[0]
+            # App.Console.PrintMessage(
+            #     (glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
             # App.Console.PrintMessage('moving object')
             # App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(measuring_position[0] - x, measuring_position[1], measuring_position[2]), App.Rotation(
             #     App.Vector(0, 0, 0), 1), App.Vector(0, 0, 0))
 
             # glass_obj.Placement = App.Placement(App.Vector(measuring_position[0], measuring_position[1]- x, measuring_position[2]), App.Rotation(glass_obj_rot))
 
-            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x
+
+
             App.getDocument('model').getObject('DatumPoint').recompute()
             Gui.getDocument('model').resetEdit()
             # App.getDocument('model').getObject('DatumPoint').recompute()
             # App.Console.PrintMessage('point placement:')
             v = App.getDocument('model').getObject('DatumPoint').Placement.Base
             # App.Console.PrintMessage()
-            App.Console.PrintMessage('\n')
-            App.Console.PrintMessage((v.x, v.y, v.z))
-            App.Console.PrintMessage('\n')
-            App.Console.PrintMessage(
-                ([measuring_position[0] + starting_pos - x, v.y, measuring_position[2] + itemHoff]))
+            # App.Console.PrintMessage('\n')
+            # App.Console.PrintMessage((v.x, v.y, v.z))
+            # App.Console.PrintMessage('\n')
+            # App.Console.PrintMessage(
+            #     ([measuring_position[0], v.y, measuring_position[2] + itemHoff]))
 
             if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
-                positions.append([measuring_position[0] + starting_pos - x, v.y, measuring_position[2] + itemHoff])
-                first_pass = True
+                positions.append([stepSum, v.y, itemVoff_sum])
+                App.Console.PrintMessage('\n')
+                App.Console.PrintMessage((stepSum, v.y, itemVoff_sum))
+                App.Console.PrintMessage('\n')
+                App.Console.PrintMessage((glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
+                # first_pass = True
             else:
-                # positions.append([None, None, None])
-                if first_pass == True:
-                    break
+                positions.append([stepSum, 'nan', itemVoff_sum])
+            # else:
+            #     # positions.append([None, None, None])
+            #     if first_pass == True:
+            #         break
 
             if stepSum > 2000:
-                App.Console.PrintMessage("Empty plane.")
+                App.Console.PrintMessage("End of the projection limit.")
                 break
 
             stepSum += x
+            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z - x
+            measuring_position[0] = measuring_position[0] - x
+
         measuring_position[2] -= itemVoff_sum
 
     for i, char in enumerate(''.join(reversed(modelPath))):
@@ -220,8 +262,11 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
             break
 
     savePos = open(savePath + 'saved_data.txt', 'w')
-
+    # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
     for pos in positions:
-        savePos.write(str(pos))
-        savePos.write('\n')
+        savePos.write(str(pos[0])+';'+str(pos[1])+'('+str(pos[0])+','+str(pos[2])+')')
+        if pos[2] != prev_pos:
+            savePos.write('\n')
+        prev_pos = pos[2]
     # App.Console.PrintMessage(pos)
+    formatPositions(positions, savePath)
