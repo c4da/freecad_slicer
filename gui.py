@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 # Create by flachyjoe
+import os
+os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+print(os.getcwd())
+
 from PySide import QtCore, QtGui
 import FreeCAD,FreeCADGui,Part
 import freecad_items as fi
@@ -132,9 +137,9 @@ class myForm(Form):
         for row in range(rows):
             itemHoff = QtGui.QTableWidgetItem(str(0))
             self.tableWidget.setItem(row, 0, itemHoff)
-            itemVoff = QtGui.QTableWidgetItem(str(30))
+            itemVoff = QtGui.QTableWidgetItem(str(100))
             self.tableWidget.setItem(row, 1, itemVoff)
-            itemInc = QtGui.QTableWidgetItem(str(1))
+            itemInc = QtGui.QTableWidgetItem(str(50))
             self.tableWidget.setItem(row, 2, itemInc)
 
     def getTableData(self):
@@ -161,7 +166,7 @@ class myForm(Form):
         self.tableWidget.removeRow(1)
 
     def labelWidgets(self):
-        self.setText(self.linePath, "/home/cada/python3/freecad/MAKETA.stp")
+        self.setText(self.linePath, "D:\\Python3\\freecad_slicer\\MAKETA.stp")
         self.setText(self.lineEdit, "700, 30, 375")
         # self.setText(self.checkBox, "CheckBox")
         # self.setText(self.radioButton, "RadioButton")
@@ -175,10 +180,11 @@ class myForm(Form):
         modelPath = self.linePath.text()
         data = self.getTableData()
         origin_offset = self.lineEdit.text()
+        App.Console.PrintMessage((modelPath, data, origin_offset))
         fi.calculate(modelPath, data, origin_offset)
 
 
 if __name__ == "__main__":
-    myWindow = myForm("test window", 400, 300)
+    myWindow = myForm("Curvature analyzer", 400, 300)
     myWindow.show()
 

@@ -8,6 +8,8 @@ import ImportGui
 import Show
 
 import numpy as np
+import os
+import plotCheck
 
 
 def movePart(documentName="model", x=0, y=0, z=0):
@@ -27,24 +29,32 @@ def getObjects(documentName="model"):
 def findObjectViaLabel(documentName="model", label="glass"):
     objects = getObjects(documentName)
     for obj in objects:
+        App.Console.PrintMessage(obj.Label + '\n')
         if label in obj.Label:
             print('Found glass object.')
+            App.Console.PrintMessage('Found glass object.\n')
             return obj
     print('Glass was not found. Please, check the name of the glass model.\n')
+    App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
 
 def findGlassObj(documentName="model"):
     objects = getObjects(documentName)
     label = 'glass'
+    App.Console.PrintMessage('Listing objects:')
     for obj in objects:
+        App.Console.PrintMessage(obj.Label + '\n')
         if label in obj.Label:
             print('Found glass object.')
+            App.Console.PrintMessage('Found glass object.\n')
             return obj
         elif label.upper() in obj.Label:
             print('Found GLASS object.')
+            App.Console.PrintMessage('Found GLASS object.\n')
             return obj
     print('Glass was not found. Please, check the name of the glass model.\n')
+    App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
 
@@ -64,32 +74,47 @@ def showOnlyGlassObject(documentName="model"):
                 pass
 
 def formatPositions(positions, savePath):
+    """
+    kvuli pootoceni globalniho SS z inventoru do SS makety je:
+    x_Maketa == -z (hodnoty jsou jiz kladne z predchozi operace)
+    z_Maketa == -x (hodnoty jsou jiz kladne z predchozi operace)
+    :param positions:
+    :param savePath:
+    :return:
+    """
     # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
     # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
     lines = dict()
     for pos in positions:
         point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
-        if pos[1] not in lines:
-            lines[pos[0]] = list()
-            lines[pos[0]].append(point)
+        if pos[2] not in lines:
+            lines[pos[2]] = list()
+            lines[pos[2]].append(point)
         else:
-            lines[pos[0]].append(point)
+            lines[pos[2]].append(point)
 
-    levels = lines.keys()
-    levels = levels.sort()
-
-    f = open(savePath + 'saved_data_format.txt', 'w')
+    levels = list(lines.keys())
+    App.Console.PrintMessage(("\n levels " + str(levels)))
+    levels.sort()
+    App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
+    f = open(savePath + '\\saved_data_format.txt', 'w')
     for level in levels:
-        f.write(str(level)+';')
-        f.write(str(lines[level])[1:-1]+'\n')
+        line = (str(level)+';' + str(lines[level][1:-1])+'\n').replace("'", '')
+        f.write(line)
+        # f.write(str(level)+';')
+        # f.write(str(lines[level][1:-1])+'\n')
     f.close()
+
+    return 0
 
 
 
 
 def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
     # modelPath = '/home/cada/python3/freecad/predni.stp'
-
+    # print('clicked calculate 1')
+    App.Console.PrintMessage(('clicked calculate 2', modelPath))
+    App.Console.PrintMessage(('planes ', planes))
     App.newDocument("model")
     App.setActiveDocument("model")
     App.ActiveDocument = App.getDocument("model")
@@ -115,67 +140,56 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
     ImportGui.insert(u"" + modelPath, "model")
     Gui.SendMsgToActiveView("ViewFit")
     Gui.activeDocument().activeView().viewDefaultOrientation()
-
-    # App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(0, 0, 0),
-    #                                                                  App.Rotation(App.Vector(0, 0, 0.),
-    #                                                                               0), App.Vector(0, 0, 0))
     showOnlyGlassObject("model")
     glass_obj = findGlassObj("model")
+    App.Console.PrintMessage('\n 1 \n')
     ### Begin command PartDesign_Point
     App.getDocument('model').getObject('Body').newObject('PartDesign::Point', 'DatumPoint')
     App.activeDocument().recompute()
-    Gui.getDocument('model').setEdit(App.getDocument('model').getObject('Body'), 0, 'DatumPoint.')
-    tv = Show.TempoVis(App.ActiveDocument, tag='PartGui::TaskAttacher')
-    tvObj = App.getDocument('model').getObject('DatumPoint')
-    dep_features = tv.get_all_dependent(App.getDocument('model').getObject('Body'), 'DatumPoint.')
-    if tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
-        visible_features = [feat for feat in tvObj.InList if feat.isDerivedFrom('PartDesign::FeaturePrimitive')]
-        dep_features = [feat for feat in dep_features if feat not in visible_features]
-        del (visible_features)
-    tv.hide(dep_features)
-    del (dep_features)
-    if not tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
-        if len(tvObj.Support) > 0:
-            tv.show([lnk[0] for lnk in tvObj.Support])
-    del (tvObj)
-    Gui.Selection.clearSelection()
-    # Gui.Selection.addSelection('model', 'p_X2_0159_X0_edn_X_ED_skl_o', 'Part__Feature.Face75', 214.647, -183.617,
-    #                            -58.2989)
+    App.Console.PrintMessage('\n 1 1  \n')
+    Gui.activeDocument().setEdit('DatumPoint')
+    App.ActiveDocument.DatumPoint.MapReversed = False
+    App.ActiveDocument.DatumPoint.Support = [(glass_obj, ''),
+                                             (App.getDocument('model').Y_Axis003, '')]
+    App.ActiveDocument.DatumPoint.MapMode = 'ProximityPoint1'
+    App.ActiveDocument.recompute()
+    # Gui.ActiveDocument.resetEdit()
+    # Gui.getDocument('model').setEdit(App.getDocument('model').getObject('Body'), 0, 'DatumPoint.')
+    # App.Console.PrintMessage('2 0 \n')
+    # tv = Show.TempoVis(App.ActiveDocument, tag='PartGui::TaskAttacher')
+    # tvObj = App.getDocument('model').getObject('DatumPoint')
+    # App.Console.PrintMessage('2 0 1 \n')
+    # dep_features = tv.get_all_dependent(App.getDocument('model').getObject('Body'), 'DatumPoint.')
+    # App.Console.PrintMessage('2 1 \n')
+    # if tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
+    #     visible_features = [feat for feat in tvObj.InList if feat.isDerivedFrom('PartDesign::FeaturePrimitive')]
+    #     dep_features = [feat for feat in dep_features if feat not in visible_features]
+    #     del visible_features
+    # tv.hide(dep_features)
+    # del dep_features
+    # App.Console.PrintMessage('2 2 \n')
+    # if not tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
+    #     if len(tvObj.Support) > 0:
+    #         tv.show([lnk[0] for lnk in tvObj.Support])
+    # del tvObj
     # Gui.Selection.clearSelection()
-    # Gui.Selection.addSelection('model', 'p_X2_0159_X0_edn_X_ED_skl_o', 'Origin002.Y_Axis002.', 0, 294.622, 0)
-    App.getDocument('model').getObject('DatumPoint').MapReversed = False
-    App.getDocument('model').getObject('DatumPoint').Support = [
-        (glass_obj, ''),
-        (App.getDocument('model').getObject('Y_Axis'), '')]
-    App.getDocument('model').getObject('DatumPoint').MapMode = 'ProximityPoint1'
-    App.getDocument('model').getObject('DatumPoint').recompute()
-    Gui.getDocument('model').resetEdit()
-
-    # point = App.getDocument('model').getObject('DatumPoint')
-    # point.MapReversed = False
-    # point.Support = [(App.getDocument('model').getObject('Part__Feature'),'Face75'),(App.getDocument('model').getObject('Y_Axis002'),'')]
-    # point.MapMode = 'ProximityPoint1'
-    App.getDocument('model').getObject('DatumPoint').recompute()
-    Gui.getDocument('model').resetEdit()
-    # App.Console.PrintMessage('point placement:')
-    # App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
-    # App.Console.PrintMessage('moving object:')
-
+    # App.Console.PrintMessage('3 \n')
+    # App.getDocument('model').getObject('DatumPoint').MapReversed = False
+    # App.getDocument('model').getObject('DatumPoint').Support = [
+    #     (glass_obj, ''),
+    #     (App.getDocument('model').getObject('Y_Axis'), '')]
+    # App.getDocument('model').getObject('DatumPoint').MapMode = 'ProximityPoint1'
+    # App.getDocument('model').getObject('DatumPoint').recompute()
+    # Gui.getDocument('model').resetEdit()
+    # App.getDocument('model').getObject('DatumPoint').recompute()
+    # Gui.getDocument('model').resetEdit()
     parse_origin_offset = origin_offset.split(',')
     origin_offset = [float(x) for x in parse_origin_offset]
-
-    # App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(-839, 599, -474),
-    #                                                                  App.Rotation(App.Vector(0.991233, 0.126557, 0.0379443),
-    #                                                                               19.67), App.Vector(0, 0, 0))
-    # App.getDocument('model').getObject('DatumPoint').recompute()
     Gui.getDocument('model').resetEdit()
     App.getDocument('model').getObject('DatumPoint').recompute()
-    # App.Console.PrintMessage('point placement:')
-    # App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
-
     positions = []
     previous_plane = np.array([0, 0, 0])
-
+    App.Console.PrintMessage('4 \n')
     # for i in range(steps):
     # first_pass = False
     # measuring_position = origin_offset  # 375, 30, 700
@@ -184,21 +198,25 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
     # glass_obj_rot = glass_obj.Placement.Rotation.toEuler()
     # glass_obj_base = (glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z)
     starting_pos = glass_obj.Placement.Base.z - origin_offset[2]
-    glass_obj.Placement.Base.x = glass_obj.Placement.Base.x + origin_offset[2]
-
-
-
+    glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - origin_offset[2]
+    App.Console.PrintMessage('5 \n')
+    App.Console.PrintMessage('entering calc loop')
+    App.Console.PrintMessage(('entering calc loop, planes: ', planes))
+    App.activeDocument().recompute()
+    planes_absolute_pos_vertical = []
     for plane in planes:
         first_pass = False
         itemHoff, itemVoff, inc = plane
         plane = plane + previous_plane
-        measuring_position = origin_offset # 375, 30, 700
-        measuring_position[0] = measuring_position[0] - starting_pos
+        # measuring_position = origin_offset # 375, 30, 700
+        # measuring_position[0] = measuring_position[0] - starting_pos
         # x = 0
+        App.activeDocument().recompute()
         previous_plane = plane
         itemVoff_sum += itemVoff
         glass_obj.Placement.Base.z = starting_pos
-        glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - itemVoff_sum
+        glass_obj.Placement.Base.x = glass_obj.Placement.Base.x + itemVoff
+        planes_absolute_pos_vertical.append(glass_obj.Placement.Base.x )
         App.Console.PrintMessage('\n')
         App.Console.PrintMessage('new plane, itemVoff_sum')
         App.Console.PrintMessage('\n')
@@ -233,40 +251,48 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
             #     ([measuring_position[0], v.y, measuring_position[2] + itemHoff]))
 
             if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
-                positions.append([stepSum, v.y, itemVoff_sum])
-                App.Console.PrintMessage('\n')
-                App.Console.PrintMessage((stepSum, v.y, itemVoff_sum))
-                App.Console.PrintMessage('\n')
-                App.Console.PrintMessage((glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
+                App.Console.PrintMessage(("\n positions: " + str(stepSum) + str(v.y) + str(itemVoff_sum)))
+                positions.append([float(stepSum), float(round(v.y, 2)), float(itemVoff_sum)])
+                # App.Console.PrintMessage('\n')
+                # App.Console.PrintMessage((stepSum, v.y, itemVoff_sum))
+                # App.Console.PrintMessage('\n')
+                # App.Console.PrintMessage((glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
                 # first_pass = True
             else:
-                positions.append([stepSum, 'nan', itemVoff_sum])
+                positions.append([float(stepSum), np.nan, float(itemVoff_sum)])
             # else:
             #     # positions.append([None, None, None])
             #     if first_pass == True:
             #         break
 
-            if stepSum > 2000:
+            if stepSum > 1500:
                 App.Console.PrintMessage("End of the projection limit.")
                 break
 
             stepSum += x
-            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z - x
-            measuring_position[0] = measuring_position[0] - x
+            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x
+            # measuring_position[0] = measuring_position[0] - x
 
-        measuring_position[2] -= itemVoff_sum
+        # measuring_position[2] -= itemVoff_sum
 
-    for i, char in enumerate(''.join(reversed(modelPath))):
-        if char == '/' or char == "\"":
-            savePath = modelPath[:-i]
-            break
-
-    savePos = open(savePath + 'saved_data.txt', 'w')
+    # for i, char in enumerate(''.join(reversed(modelPath))):
+    #     if char == '/' or char == "\"":
+    #         savePath = modelPath[:-i]
+    #         break
+    savePath = os.path.dirname(modelPath)
+    print(savePath)
+    App.Console.PrintMessage(("\n save path ", savePath))
+    # App.Console.PrintMessage(("\n positions: ", positions))
+    savePos = open(savePath + '\\saved_data.txt', 'w')
     # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
+    prev_pos = planes_absolute_pos_vertical[0]
     for pos in positions:
-        savePos.write(str(pos[0])+';'+str(pos[1])+'('+str(pos[0])+','+str(pos[2])+')')
         if pos[2] != prev_pos:
             savePos.write('\n')
+        savePos.write(str(pos[0]) + ';' + str(pos[1]) + ';' + str(pos[2]) + '\n')
         prev_pos = pos[2]
-    # App.Console.PrintMessage(pos)
+
+    savePos.close()
+    App.Console.PrintMessage(pos)
     formatPositions(positions, savePath)
+    plotCheck.makePlots(positions, savePath)
