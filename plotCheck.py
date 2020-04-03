@@ -28,20 +28,20 @@ def plotGraph(x, y, xname, yname, title, PATH):
     plt.yticks(np.linspace(min(y), max(y), 10))
     # plt.axis('equal')
 
-    App.Console.PrintMessage('\n')
-    App.Console.PrintMessage('****************************** \n')
-    App.Console.PrintMessage('\n')
-    App.Console.PrintMessage('plotting \n')
-    App.Console.PrintMessage(x)
-    App.Console.PrintMessage(y)
-    App.Console.PrintMessage('\n')
+    # App.Console.PrintMessage('\n')
+    # App.Console.PrintMessage('****************************** \n')
+    # App.Console.PrintMessage('\n')
+    # App.Console.PrintMessage('plotting \n')
+    # App.Console.PrintMessage(x)
+    # App.Console.PrintMessage(y)
+    # App.Console.PrintMessage('\n')
 
     plt.plot(x, y)
     plt.grid(True)
     # plt.ticklabel_format(axis="y", style="plain", useOffset=False)
     # plt.show(block=False)
     plt.ioff()
-    fig.savefig(title + '_g.png')
+    fig.savefig(PATH+'\\'+title + '_graph.png')
     plt.close(fig)
     return 0
 

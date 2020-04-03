@@ -86,12 +86,13 @@ def formatPositions(positions, savePath):
     # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
     lines = dict()
     for pos in positions:
-        point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
-        if pos[2] not in lines:
-            lines[pos[2]] = list()
-            lines[pos[2]].append(point)
+        # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
+        point = str(pos[1])
+        if pos[0] not in lines:
+            lines[pos[0]] = list()
+            lines[pos[0]].append(point)
         else:
-            lines[pos[2]].append(point)
+            lines[pos[0]].append(point)
 
     levels = list(lines.keys())
     App.Console.PrintMessage(("\n levels " + str(levels)))
@@ -99,7 +100,7 @@ def formatPositions(positions, savePath):
     App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + '\\saved_data_format.txt', 'w')
     for level in levels:
-        line = (str(level)+';' + str(lines[level][1:-1])+'\n').replace("'", '')
+        line = (str(level)+';' + str(lines[level])+'\n').replace("'", '').replace('[', '').replace(']', '')
         f.write(line)
         # f.write(str(level)+';')
         # f.write(str(lines[level][1:-1])+'\n')
@@ -110,7 +111,7 @@ def formatPositions(positions, savePath):
 
 
 
-def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
+def calculate(modelPath, planes, origin_offset):
     # modelPath = '/home/cada/python3/freecad/predni.stp'
     # print('clicked calculate 1')
     App.Console.PrintMessage(('clicked calculate 2', modelPath))
@@ -192,30 +193,36 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
     App.Console.PrintMessage('4 \n')
     # for i in range(steps):
     # first_pass = False
-    # measuring_position = origin_offset  # 375, 30, 700
+    # measuring_position = origin_offset  # 700, 30, 375, 4.56
     itemVoff_sum = 0
 
     # glass_obj_rot = glass_obj.Placement.Rotation.toEuler()
     # glass_obj_base = (glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z)
-    starting_pos = glass_obj.Placement.Base.z - origin_offset[2]
+
     glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - origin_offset[2]
+    glass_obj.Placement.Base.y = glass_obj.Placement.Base.y - origin_offset[1]
+    glass_obj.Placement.Base.z = glass_obj.Placement.Base.z - origin_offset[0]
+
+    starting_pos_x = glass_obj.Placement.Base.x
+    starting_pos_y = glass_obj.Placement.Base.y
+    starting_pos_z = glass_obj.Placement.Base.z
+
     App.Console.PrintMessage('5 \n')
     App.Console.PrintMessage('entering calc loop')
     App.Console.PrintMessage(('entering calc loop, planes: ', planes))
     App.activeDocument().recompute()
     planes_absolute_pos_vertical = []
     for plane in planes:
-        first_pass = False
         itemHoff, itemVoff, inc = plane
         plane = plane + previous_plane
-        # measuring_position = origin_offset # 375, 30, 700
-        # measuring_position[0] = measuring_position[0] - starting_pos
-        # x = 0
         App.activeDocument().recompute()
         previous_plane = plane
         itemVoff_sum += itemVoff
-        glass_obj.Placement.Base.z = starting_pos
-        glass_obj.Placement.Base.x = glass_obj.Placement.Base.x + itemVoff
+
+        glass_obj.Placement.Base.x = starting_pos_x + itemVoff_sum
+        glass_obj.Placement.Base.y = starting_pos_y
+        glass_obj.Placement.Base.z = starting_pos_z
+
         planes_absolute_pos_vertical.append(glass_obj.Placement.Base.x )
         App.Console.PrintMessage('\n')
         App.Console.PrintMessage('new plane, itemVoff_sum')
@@ -253,32 +260,21 @@ def calculate(modelPath, planes, origin_offset, origin_x_offsets=0):
             if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
                 App.Console.PrintMessage(("\n positions: " + str(stepSum) + str(v.y) + str(itemVoff_sum)))
                 positions.append([float(stepSum), float(round(v.y, 2)), float(itemVoff_sum)])
-                # App.Console.PrintMessage('\n')
-                # App.Console.PrintMessage((stepSum, v.y, itemVoff_sum))
-                # App.Console.PrintMessage('\n')
-                # App.Console.PrintMessage((glass_obj.Placement.Base.x, glass_obj.Placement.Base.y, glass_obj.Placement.Base.z))
-                # first_pass = True
+
             else:
                 positions.append([float(stepSum), np.nan, float(itemVoff_sum)])
-            # else:
-            #     # positions.append([None, None, None])
-            #     if first_pass == True:
-            #         break
+
 
             if stepSum > 1500:
                 App.Console.PrintMessage("End of the projection limit.")
                 break
 
-            stepSum += x
-            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x
+            stepSum += x + itemHoff
+            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x + itemHoff
             # measuring_position[0] = measuring_position[0] - x
 
         # measuring_position[2] -= itemVoff_sum
 
-    # for i, char in enumerate(''.join(reversed(modelPath))):
-    #     if char == '/' or char == "\"":
-    #         savePath = modelPath[:-i]
-    #         break
     savePath = os.path.dirname(modelPath)
     print(savePath)
     App.Console.PrintMessage(("\n save path ", savePath))

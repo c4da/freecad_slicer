@@ -1,108 +1,234 @@
 # -*- coding: utf-8 -*-
+# Create by flachyjoe
+import os
 
-# Macro Begin: /home/cada/python3/freecad/rec.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
-import FreeCAD
-import ImportGui
-import Points
+os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+print(os.getcwd())
+
+from PySide import QtCore, QtGui
+import FreeCAD, FreeCADGui, Part
+import freecad_items as fi
+import FreeCAD as App
+import ImportGui as Gui
 import Show
 
-path = '/home/cada/python3/freecad/'
-fileNameGlass = 'predni_surf.step'
-fileNamePoints = 'points.asc'
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
 
-App.newDocument("model")
-App.setActiveDocument("model")
-App.ActiveDocument=App.getDocument("model")
-Gui.ActiveDocument=Gui.getDocument("model")
-Gui.activeDocument().activeView().viewDefaultOrientation()
-### End command Std_New
-Gui.runCommand('Std_OrthographicCamera',1)
-### Begin command Std_Workbench
-Gui.activateWorkbench("PartDesignWorkbench")
-### End command Std_Workbench
-### Begin command Std_Part
-App.activeDocument().Tip = App.activeDocument().addObject('App::Part','Part')
-App.activeDocument().Part.Label = 'Part'
-Gui.activateView('Gui::View3DInventor', True)
-Gui.activeView().setActiveObject('part', App.activeDocument().Part)
-App.ActiveDocument.recompute()
-App.activeDocument().addObject('PartDesign::Body','Body')
-Gui.activateView('Gui::View3DInventor', True)
-Gui.activeView().setActiveObject('pdbody', App.activeDocument().Body)
-Gui.Selection.clearSelection()
-Gui.Selection.addSelection(App.ActiveDocument.Body)
-App.activeDocument().Part.addObject(App.ActiveDocument.Body)
-App.ActiveDocument.recompute()
-### Begin command Std_Import
-ImportGui.insert(u"/home/cada/python3/freecad/predni.stp","model")
-Gui.SendMsgToActiveView("ViewFit")
-Gui.activeDocument().activeView().viewDefaultOrientation()
-App.getDocument("model").Part__Feature.Placement=App.Placement(App.Vector(-900,800,-500), App.Rotation(App.Vector(0.991233,0.126557,0.0379443),19.67), App.Vector(0,0,0))
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
 
-### Begin command PartDesign_Point
-App.getDocument('model').getObject('Body').newObject('PartDesign::Point','DatumPoint')
-App.activeDocument().recompute()
-Gui.getDocument('model').setEdit(App.getDocument('model').getObject('Body'),0,'DatumPoint.')
-tv = Show.TempoVis(App.ActiveDocument, tag= 'PartGui::TaskAttacher')
-tvObj = App.getDocument('model').getObject('DatumPoint')
-dep_features = tv.get_all_dependent(App.getDocument('model').getObject('Body'), 'DatumPoint.')
-if tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
-	visible_features = [feat for feat in tvObj.InList if feat.isDerivedFrom('PartDesign::FeaturePrimitive')]
-	dep_features = [feat for feat in dep_features if feat not in visible_features]
-	del(visible_features)
-tv.hide(dep_features)
-del(dep_features)
-if not tvObj.isDerivedFrom('PartDesign::CoordinateSystem'):
-		if len(tvObj.Support) > 0:
-			tv.show([lnk[0] for lnk in tvObj.Support])
-del(tvObj)
-Gui.Selection.clearSelection()
-Gui.Selection.addSelection('model','p_X2_0159_X0_edn_X_ED_skl_o','Part__Feature.Face75',214.647,-183.617,-58.2989)
-Gui.Selection.clearSelection()
-Gui.Selection.addSelection('model','p_X2_0159_X0_edn_X_ED_skl_o','Origin002.Y_Axis002.',0,294.622,0)
-App.getDocument('model').getObject('DatumPoint').MapReversed = False
-App.getDocument('model').getObject('DatumPoint').Support = [(App.getDocument('model').getObject('Part__Feature'),'Face75'),(App.getDocument('model').getObject('Y_Axis002'),'')]
-App.getDocument('model').getObject('DatumPoint').MapMode = 'ProximityPoint1'
-App.getDocument('model').getObject('DatumPoint').recompute()
-Gui.getDocument('model').resetEdit()
 
-# point = App.getDocument('model').getObject('DatumPoint')
-# point.MapReversed = False
-# point.Support = [(App.getDocument('model').getObject('Part__Feature'),'Face75'),(App.getDocument('model').getObject('Y_Axis002'),'')]
-# point.MapMode = 'ProximityPoint1'
-App.getDocument('model').getObject('DatumPoint').recompute()
-Gui.getDocument('model').resetEdit()
-App.Console.PrintMessage('point placement:')
-App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
-# App.Console.PrintMessage('moving object:')
-# App.getDocument("model").Part__Feature.Placement=App.Placement(App.Vector(-839,599,-474), App.Rotation(App.Vector(0.991233,0.126557,0.0379443),19.67), App.Vector(0,0,0))
-# App.getDocument('model').getObject('DatumPoint').recompute()
-# Gui.getDocument('model').resetEdit()
-App.getDocument('model').getObject('DatumPoint').recompute()
-App.Console.PrintMessage('point placement:')
-App.Console.PrintMessage(App.getDocument('model').getObject('DatumPoint').Placement)
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
-positions = []
-steps = 2
-x = 1
-for i in range(steps):
-	x += 1
-	# App.Console.PrintMessage('moving object')
-	App.getDocument("model").Part__Feature.Placement = App.Placement(App.Vector(-720-x, 599, -474), App.Rotation(
-	App.Vector(0.991233, 0.126557, 0.0379443), 19.67), App.Vector(0, 0, 0))
-	App.getDocument('model').getObject('DatumPoint').recompute()
-	Gui.getDocument('model').resetEdit()
-	App.getDocument('model').getObject('DatumPoint').recompute()
-	# App.Console.PrintMessage('point placement:')
-	v = App.getDocument('model').getObject('DatumPoint').Placement.Base
-	# App.Console.PrintMessage()
-	if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
-		positions.append([v.x, v.y, v.z])
-	else:
-		positions.append([None, None, None])
-savePos = open('/home/cada/python3/freecad/positions.txt', 'w')
 
-for pos in positions:
-	savePos.write(str(pos))
-	savePos.write('\n')
-	# App.Console.PrintMessage(pos)
+def getDefaultValues(fileName):
+    f = open(fileName, 'r')
+    lines = f.readlines()
+
+    path = lines[0].split('=')
+    path = path[1].strip().replace(' ', '')
+
+    offset = lines[1].split('=')
+    offset = offset[1].strip().replace(' ', '')
+
+    planesNum = lines[2].split('=')
+    planesNum = planesNum[1].strip().replace(' ', '')
+
+    verticalOffset = lines[3].split('=')
+    verticalOffset = verticalOffset[1].strip().replace(' ', '')
+
+    horizontalOffset = lines[4].split('=')
+    horizontalOffset = horizontalOffset[1].strip().replace(' ', '')
+
+    increment = lines[5].split('=')
+    increment = increment[1].strip().replace(' ', '')
+
+    return path, offset, planesNum, verticalOffset, horizontalOffset, increment
+
+
+class Form(object):
+    def __init__(self, title, width, height):
+        self.window = QtGui.QMainWindow()
+        self.title = title
+        self.window.setObjectName(_fromUtf8(title))
+        self.window.setWindowTitle(_translate(self.title, self.title, None))
+        self.window.resize(width, height)
+
+    def setupWidgets(self):
+        pass
+
+    def labelWidgets(self):
+        pass
+
+    def show(self):
+        self.setupWidgets()
+        self.labelWidgets()
+        self.window.show()
+
+    def setText(self, control, text):
+        control.setText(_translate(self.title, text, None))
+
+
+class myForm(Form):
+    def setupWidgets(self):
+        self.centralWidget = QtGui.QWidget(self.window)
+        self.window.setCentralWidget(self.centralWidget)
+        self.layout = QtGui.QVBoxLayout()
+        self.centralWidget.setLayout(self.layout)
+        self.layout_offset = QtGui.QVBoxLayout()
+        self.layout.addLayout(self.layout_offset)
+
+        label_path = QtGui.QLabel()
+        label_path.setText('Set path:')
+        self.layout_offset.addWidget(label_path)
+
+        self.linePath = QtGui.QLineEdit()
+        self.linePath.setGeometry(QtCore.QRect(30, 40, 350, 22))
+        self.layout_offset.addWidget(self.linePath)
+
+        label_origin = QtGui.QLabel()
+        label_origin.setText('Set origin offset:')
+        self.layout_offset.addWidget(label_origin)
+
+        self.lineEdit = QtGui.QLineEdit()
+        self.lineEdit.setGeometry(QtCore.QRect(30, 40, 350, 22))
+        self.layout_offset.addWidget(self.lineEdit)
+
+        self.default_path, self.default_offset, self.default_planesNum, self.default_verticalOffset, self.default_horizontalOffset, self.default_increment = getDefaultValues(
+            'default_values.txt')
+
+        self.createTable(self.layout)
+
+        #
+        # self.pushButton = QtGui.QPushButton(self.centralWidget)
+        buttonsLayout = QtGui.QHBoxLayout()
+
+        self.calcButton = QtGui.QPushButton('Calculate')
+        # self.pushButton = QtGui.QPushButton('Abaqus path')
+        self.calcButton.setGeometry(QtCore.QRect(30, 170, 120, 80))
+        self.calcButton.clicked.connect(self.on_calcButton_clicked)
+        buttonsLayout.addWidget(self.calcButton)
+
+        self.closeButton = QtGui.QPushButton('Close')
+        # self.pushButton = QtGui.QPushButton('Abaqus path')
+        self.closeButton.setGeometry(QtCore.QRect(30, 170, 120, 80))
+        self.closeButton.clicked.connect(self.on_closeButton_clicked)
+        buttonsLayout.addWidget(self.closeButton)
+        self.layout.addLayout(buttonsLayout)
+
+        # self.checkBox = QtGui.QCheckBox(self.centralWidget)
+        # self.checkBox.setGeometry(QtCore.QRect(30, 90, 81, 20))
+        # self.checkBox.setChecked(True)
+
+        # self.radioButton = QtGui.QRadioButton(self.centralWidget)
+        # self.radioButton.setGeometry(QtCore.QRect(30, 130, 95, 20))
+
+
+    def createTable(self, layout):
+        self.tableWidget = QtGui.QTableWidget()
+        self.tableWidget.setRowCount(int(self.default_planesNum))
+        self.tableWidget.setColumnCount(3)
+        labels = ['horizontal offset', 'vertical offset', 'increment']
+        self.tableWidget.setHorizontalHeaderLabels(labels)
+        self.tableWidget.resizeColumnToContents(0)
+        self.tableWidget.resizeColumnToContents(1)
+        layout.addWidget(self.tableWidget)
+
+        layoutButtons = QtGui.QHBoxLayout()
+        layout.addLayout(layoutButtons)
+
+        pushButtonAddPlane = QtGui.QPushButton('Add plane')
+        pushButtonAddPlane.setGeometry(QtCore.QRect(30, 170, 120, 80))
+        pushButtonAddPlane.clicked.connect(self.addTableRow)
+        layoutButtons.addWidget(pushButtonAddPlane)
+
+        pushButtonRmPlane = QtGui.QPushButton('Remove plane')
+        pushButtonRmPlane.setGeometry(QtCore.QRect(30, 170, 120, 80))
+        pushButtonRmPlane.clicked.connect(self.delTableRow)
+        layoutButtons.addWidget(pushButtonRmPlane)
+        self.fillTable()
+
+    def fillTable(self):
+        labels = ['horizontal offset', 'vertical offset', 'increment']
+        rows = self.tableWidget.rowCount()
+        cols = self.tableWidget.columnCount()
+        for row in range(rows):
+            itemHoff = QtGui.QTableWidgetItem(str(self.default_horizontalOffset))
+            self.tableWidget.setItem(row, 0, itemHoff)
+            itemVoff = QtGui.QTableWidgetItem(str(self.default_verticalOffset))
+            self.tableWidget.setItem(row, 1, itemVoff)
+            itemInc = QtGui.QTableWidgetItem(str(self.default_increment))
+            self.tableWidget.setItem(row, 2, itemInc)
+
+    def getTableData(self):
+
+        data = []
+        rows = self.tableWidget.rowCount()
+        cols = self.tableWidget.columnCount()
+
+        for row in range(rows):
+            itemHoff = float(self.tableWidget.item(row, 0).text())
+            itemVoff = float(self.tableWidget.item(row, 1).text())
+            itemInc = float(self.tableWidget.item(row, 2).text())
+
+            data.append([itemHoff, itemVoff, itemInc])
+
+        return data
+
+    def addTableRow(self):
+        self.tableWidget.insertRow(1)
+
+    def delTableRow(self):
+        self.tableWidget.removeRow(1)
+
+    def labelWidgets(self):
+        self.setText(self.linePath, self.default_path)
+        self.setText(self.lineEdit, self.default_offset)
+        # self.setText(self.checkBox, "CheckBox")
+        # self.setText(self.radioButton, "RadioButton")
+
+    def on_closeButton_clicked(self):
+        print(self.lineEdit.text())
+        self.window.close()
+        # FreeCADGui.Control.closeDialog()
+
+    def on_calcButton_clicked(self):
+        modelPath = self.linePath.text()
+        data = self.getTableData()
+        origin_offset = self.lineEdit.text()
+        # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
+        #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        if os.path.isfile(modelPath):
+            print("CAD file exist")
+            App.Console.PrintMessage((modelPath, data, origin_offset))
+            fi.calculate(modelPath, data, origin_offset)
+            message_box = QtGui.QMessageBox()
+            message_box.setText(str('All done!'))
+            message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+            message_box.exec_()
+            # message_box.show()
+            # buttonReply = QtGui.QMessageBox.question(self, 'Notification:', "All done!",
+            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        else:
+            # buttonReply = QtGui.QMessageBox.question(self, 'Error:', "File does not exists.",
+            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+            message_box = QtGui.QMessageBox()
+            message_box.setText(str('File does not exists!'))
+            message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+            message_box.exec_()
+            # message_box.show()
+            print("CAD file does not exist")
+
+
+if __name__ == "__main__":
+    myWindow = myForm("Curvature analyzer", 400, 300)
+    myWindow.show()
