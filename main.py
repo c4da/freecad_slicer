@@ -210,11 +210,17 @@ class myForm(Form):
         if os.path.isfile(modelPath):
             print("CAD file exist")
             App.Console.PrintMessage((modelPath, data, origin_offset))
-            fi.calculate(modelPath, data, origin_offset)
-            message_box = QtGui.QMessageBox()
-            message_box.setText(str('All done!'))
-            message_box.addButton("OK", QtGui.QMessageBox.YesRole)
-            message_box.exec_()
+            results = fi.calculate(modelPath, data, origin_offset)
+            if results == 0:
+                message_box = QtGui.QMessageBox()
+                message_box.setText(str('All done!'))
+                message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+                message_box.exec_()
+            else:
+                message_box = QtGui.QMessageBox()
+                message_box.setText(str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
+                message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+                message_box.exec_()
             # message_box.show()
             # buttonReply = QtGui.QMessageBox.question(self, 'Notification:', "All done!",
             #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)

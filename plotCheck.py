@@ -50,29 +50,31 @@ def processData(data):
     return np.array(data)
 
 
-def makePlots(dataIn, path):
+def makePlots(dataIn, path, name = ''):
     data = processData(dataIn)
 
     data_x = data[:, 0]
     data_y = data[:, 1]
     data_z = data[:, 2]
-    App.Console.PrintMessage(data_x)
-    App.Console.PrintMessage(data_y)
-    App.Console.PrintMessage(data_z)
+    # App.Console.PrintMessage(data_x)
+    # App.Console.PrintMessage(data_y)
+    # App.Console.PrintMessage(data_z)
 
     data_y = [0 if np.isnan(x) else x for x in data_y]
 
     prev_dist = data_z[0]
+    # print('in makeplots printing dataz')
+    # print(data_z)
     level_index = []
     j = 0
     for i, dist in enumerate(data_z):
-        App.Console.PrintMessage((prev_dist, dist))
+        # App.Console.PrintMessage((prev_dist, dist))
         if prev_dist != dist or i == len(data_z)-1:
             level_index.append(i)
             label = str(prev_dist)
             label = label.split('.')
-            title = 'c-section_' + str(label[0])
-            App.Console.PrintMessage(title)
+            title = 'c-section_' + str(label[0]) + name
+            # App.Console.PrintMessage(title)
             plotGraph(data_x[j:i], data_y[j:i], 'model - long. coord', 'model - height', title, path)
             j = i
             prev_dist = dist
