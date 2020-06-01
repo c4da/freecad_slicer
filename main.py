@@ -13,6 +13,9 @@ import FreeCAD as App
 import ImportGui as Gui
 import Show
 
+import sys
+from os import path
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -34,8 +37,8 @@ def getDefaultValues(fileName):
     f = open(fileName, 'r')
     lines = f.readlines()
 
-    path = lines[0].split('=')
-    path = path[1].strip().replace(' ', '')
+    axisName = lines[0].split('=')
+    axisName = axisName[1].strip().replace(' ', '')
 
     offset = lines[1].split('=')
     offset = offset[1].strip().replace(' ', '')
@@ -52,7 +55,7 @@ def getDefaultValues(fileName):
     increment = lines[5].split('=')
     increment = increment[1].strip().replace(' ', '')
 
-    return path, offset, planesNum, verticalOffset, horizontalOffset, increment
+    return axisName, offset, planesNum, verticalOffset, horizontalOffset, increment
 
 
 class Form(object):
@@ -88,7 +91,7 @@ class myForm(Form):
         self.layout.addLayout(self.layout_offset)
 
         label_path = QtGui.QLabel()
-        label_path.setText('Set path:')
+        label_path.setText('Set axis name:')
         self.layout_offset.addWidget(label_path)
 
         self.linePath = QtGui.QLineEdit()
@@ -185,16 +188,16 @@ class myForm(Form):
         return data
 
     def addTableRow(self):
-        self.tableWidget.insertRow(1)
+        rows = self.tableWidget.rowCount()
+        self.tableWidget.insertRow(rows)
 
     def delTableRow(self):
-        self.tableWidget.removeRow(1)
+        rows = self.tableWidget.rowCount()
+        self.tableWidget.removeRow(rows-1)
 
     def labelWidgets(self):
         self.setText(self.linePath, self.default_path)
         self.setText(self.lineEdit, self.default_offset)
-        # self.setText(self.checkBox, "CheckBox")
-        # self.setText(self.radioButton, "RadioButton")
 
     def on_closeButton_clicked(self):
         print(self.lineEdit.text())
@@ -202,37 +205,37 @@ class myForm(Form):
         # FreeCADGui.Control.closeDialog()
 
     def on_calcButton_clicked(self):
-        modelPath = self.linePath.text()
+        attributes = self.linePath.text()
         data = self.getTableData()
         origin_offset = self.lineEdit.text()
         # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
         #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
-        if os.path.isfile(modelPath):
-            print("CAD file exist")
-            App.Console.PrintMessage((modelPath, data, origin_offset))
-            results = fi.calculate(modelPath, data, origin_offset)
-            if results == 0:
-                message_box = QtGui.QMessageBox()
-                message_box.setText(str('All done!'))
-                message_box.addButton("OK", QtGui.QMessageBox.YesRole)
-                message_box.exec_()
-            else:
-                message_box = QtGui.QMessageBox()
-                message_box.setText(str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
-                message_box.addButton("OK", QtGui.QMessageBox.YesRole)
-                message_box.exec_()
-            # message_box.show()
-            # buttonReply = QtGui.QMessageBox.question(self, 'Notification:', "All done!",
-            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
-        else:
-            # buttonReply = QtGui.QMessageBox.question(self, 'Error:', "File does not exists.",
-            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        # if os.path.isfile(modelPath\):
+        #     print("CAD file exist")
+        App.Console.PrintMessage((attributes, data, origin_offset))
+        results = fi.calculate(attributes, data, origin_offset, os.path.dirname(os.path.abspath(__file__)))
+        if results == 0:
             message_box = QtGui.QMessageBox()
-            message_box.setText(str('File does not exists!'))
+            message_box.setText(str('All done!'))
+            message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+            message_box.exec_()
+        else:
+            message_box = QtGui.QMessageBox()
+            message_box.setText(str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
             message_box.addButton("OK", QtGui.QMessageBox.YesRole)
             message_box.exec_()
             # message_box.show()
-            print("CAD file does not exist")
+            # buttonReply = QtGui.QMessageBox.question(self, 'Notification:', "All done!",
+            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        # else:
+        #     # buttonReply = QtGui.QMessageBox.question(self, 'Error:', "File does not exists.",
+        #     #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        #     message_box = QtGui.QMessageBox()
+        #     message_box.setText(str('File does not exists!'))
+        #     message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+        #     message_box.exec_()
+        #     # message_box.show()
+        #     print("CAD file does not exist")
 
 
 if __name__ == "__main__":

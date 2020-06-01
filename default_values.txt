@@ -1,4 +1,4 @@
-CAD = D:\Python3\freecad_slicer\data\MAKETA.stp
+AxisName = Y_Axis003
 offset = 700, 30, 375
 planes = 1
 verticalOffset = 200

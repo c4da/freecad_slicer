@@ -41,7 +41,7 @@ def plotGraph(x, y, xname, yname, title, PATH):
     # plt.ticklabel_format(axis="y", style="plain", useOffset=False)
     # plt.show(block=False)
     plt.ioff()
-    fig.savefig(PATH+'\\'+title + '_graph.png')
+    fig.savefig(PATH+title + '_graph.png')
     plt.close(fig)
     return 0
 
