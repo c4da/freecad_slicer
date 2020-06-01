@@ -16,12 +16,14 @@ import platform
 import data_eval as de
 import sort_cols
 
+# ---------------------------------------------------------------------------
 
 def movePart(documentName, x=0, y=0, z=0):
     App.getDocument(documentName).Part__Feature.Placement = App.Placement(App.Vector(x, y, z),
                                                                           App.Rotation(App.Vector(0, 0, 0.),
                                                                                        0), App.Vector(0, 0, 0))
 
+# ---------------------------------------------------------------------------
 
 def interpolate_data(positions):
     positions_arr = np.array(positions)
@@ -30,43 +32,65 @@ def interpolate_data(positions):
     interp_start_x = None
     interp_end_x = None
     # print(positions)
-    for i, pos in enumerate(positions):
-        # print(pos)
-        if not np.isnan(pos[1]) and not np.isnan(positions[i + 1][1]) and not np.isnan(positions[i + 2][1]) and \
-                interp_start_x is None:
-            interp_start_x = i
-            print('interp start interval set at row: ', i)
-            continue
-        if not np.isnan(pos[1]) and interp_start_x != None and np.isnan(positions[i + 1][1]) and \
-                np.isnan(positions[i + 2][1]):
-            print('interp end interval set at row: ', i)
-            interp_end_x = i
-            break
-    # print(interp_start_x, interp_end_x)
+    rawData = dict()
+    interpData = list()
+    for pos in positions:
+        # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
+        point = str(pos[1] + 200)
+        if pos[0] not in rawData:
+            rawData[pos[0]] = list()
+            rawData[pos[0]].append(point)
+        else:
+            rawData[pos[0]].append(point)
 
-    x = positions_arr[interp_start_x:interp_end_x, 0]
-    y = positions_arr[interp_start_x:interp_end_x, 1]
-    x_eval = np.arange(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0], 0.1)
+    levels = list(lines.keys())
+    # App.Console.PrintMessage(("\n levels " + str(levels)))
+    levels.sort()
 
-    y_interp = de.getLinInterp(x_eval, x, y)
-    data_z = np.ones((1, len(x_eval))) * positions_arr[0, 2]
+    for level in levels:
+        positions = rawData[level]
+        for i, pos in enumerate(positions):
+            # print(pos)
+            if not np.isnan(pos[1]) and not np.isnan(positions[i + 1][1]) and not np.isnan(positions[i + 2][1]) and \
+                    interp_start_x is None:
+                interp_start_x = i
+                print('interp start interval set at row: ', i)
+                continue
+            if not np.isnan(pos[1]) and interp_start_x != None and np.isnan(positions[i + 1][1]) and \
+                    np.isnan(positions[i + 2][1]):
+                print('interp end interval set at row: ', i)
+                interp_end_x = i
+                break
+        # print(interp_start_x, interp_end_x)
 
-    data = []
-    for i, x in enumerate(x_eval):
-        y = y_interp[i]
-        z = data_z[0, i]
-        pos = [x, y, z]
-        data.append(pos)
-    return data
+        x = positions_arr[interp_start_x:interp_end_x, 0]
+        y = positions_arr[interp_start_x:interp_end_x, 1]
+        x_eval = np.arange(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0], 0.1)
 
+        y_interp = de.getLinInterp(x_eval, x, y)
+        data_z = np.ones((1, len(x_eval))) * positions_arr[0, 2]
+
+        data = []
+        for i, x in enumerate(x_eval):
+            y = y_interp[i]
+            z = data_z[0, i]
+            pos = [x, y, z]
+            data.append(pos)
+
+        interpData += data
+    return interpData
+
+# ---------------------------------------------------------------------------
 
 def printMessage(msg):
     pass
 
+# ---------------------------------------------------------------------------
 
 def getObjects(documentName):
     return App.getDocument(documentName).Objects
 
+# ---------------------------------------------------------------------------
 
 def findObjectViaLabel(documentName, label):
     objects = getObjects(documentName)
@@ -80,6 +104,8 @@ def findObjectViaLabel(documentName, label):
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
+# ---------------------------------------------------------------------------
+
 def findObjectViaName(documentName, name):
     objects = getObjects(documentName)
     for obj in objects:
@@ -92,7 +118,7 @@ def findObjectViaName(documentName, name):
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
-
+# ---------------------------------------------------------------------------
 def findGlassObj(documentName):
     objects = getObjects(documentName)
     # label = 'glass'
@@ -112,7 +138,7 @@ def findGlassObj(documentName):
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
-
+# ---------------------------------------------------------------------------
 def showOnlyGlassObject(documentName):
     objects = getObjects(documentName)
     for obj in objects:
@@ -125,7 +151,7 @@ def showOnlyGlassObject(documentName):
             else:
                 pass
 
-
+# ---------------------------------------------------------------------------
 def formatPositions(positions, savePath):
     """
     kvuli pootoceni globalniho SS z inventoru do SS makety je:
@@ -161,6 +187,8 @@ def formatPositions(positions, savePath):
 
     return 0
 
+
+# ---------------------------------------------------------------------------
 
 def formatInterpolatedPositions(positions, savePath):
     """
@@ -198,6 +226,7 @@ def formatInterpolatedPositions(positions, savePath):
 
     return 0
 
+# ---------------------------------------------------------------------------
 
 def calculate(axisLabel, planes, origin_offset, mainPath):
     # modelPath = '/home/cada/python3/freecad/predni.stp'

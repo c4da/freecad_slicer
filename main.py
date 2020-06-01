@@ -16,6 +16,8 @@ import Show
 import sys
 from os import path
 
+# ========================================================================
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -32,6 +34,7 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+# ---------------------------------------------------------------------------
 
 def getDefaultValues(fileName):
     f = open(fileName, 'r')
@@ -58,6 +61,8 @@ def getDefaultValues(fileName):
     return axisName, offset, planesNum, verticalOffset, horizontalOffset, increment
 
 
+# ========================================================================
+
 class Form(object):
     def __init__(self, title, width, height):
         self.window = QtGui.QMainWindow()
@@ -80,6 +85,7 @@ class Form(object):
     def setText(self, control, text):
         control.setText(_translate(self.title, text, None))
 
+# ========================================================================
 
 class myForm(Form):
     def setupWidgets(self):
@@ -135,7 +141,7 @@ class myForm(Form):
         # self.radioButton = QtGui.QRadioButton(self.centralWidget)
         # self.radioButton.setGeometry(QtCore.QRect(30, 130, 95, 20))
 
-
+    # ---------------------------------------------------------------------------
     def createTable(self, layout):
         self.tableWidget = QtGui.QTableWidget()
         self.tableWidget.setRowCount(int(self.default_planesNum))
@@ -160,6 +166,8 @@ class myForm(Form):
         layoutButtons.addWidget(pushButtonRmPlane)
         self.fillTable()
 
+    # ---------------------------------------------------------------------------
+
     def fillTable(self):
         labels = ['horizontal offset', 'vertical offset', 'increment']
         rows = self.tableWidget.rowCount()
@@ -171,6 +179,8 @@ class myForm(Form):
             self.tableWidget.setItem(row, 1, itemVoff)
             itemInc = QtGui.QTableWidgetItem(str(self.default_increment))
             self.tableWidget.setItem(row, 2, itemInc)
+
+    # ---------------------------------------------------------------------------
 
     def getTableData(self):
 
@@ -187,22 +197,32 @@ class myForm(Form):
 
         return data
 
+    # ---------------------------------------------------------------------------
+
     def addTableRow(self):
         rows = self.tableWidget.rowCount()
         self.tableWidget.insertRow(rows)
+
+    # ---------------------------------------------------------------------------
 
     def delTableRow(self):
         rows = self.tableWidget.rowCount()
         self.tableWidget.removeRow(rows-1)
 
+    # ---------------------------------------------------------------------------
+
     def labelWidgets(self):
         self.setText(self.linePath, self.default_path)
         self.setText(self.lineEdit, self.default_offset)
+
+    # ---------------------------------------------------------------------------
 
     def on_closeButton_clicked(self):
         print(self.lineEdit.text())
         self.window.close()
         # FreeCADGui.Control.closeDialog()
+
+    # ---------------------------------------------------------------------------
 
     def on_calcButton_clicked(self):
         attributes = self.linePath.text()
@@ -237,6 +257,7 @@ class myForm(Form):
         #     # message_box.show()
         #     print("CAD file does not exist")
 
+# ========================================================================
 
 if __name__ == "__main__":
     myWindow = myForm("Curvature analyzer", 400, 300)
