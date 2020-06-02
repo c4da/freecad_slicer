@@ -46,20 +46,32 @@ def getDefaultValues(fileName):
     offset = lines[1].split('=')
     offset = offset[1].strip().replace(' ', '')
 
-    planesNum = lines[2].split('=')
-    planesNum = planesNum[1].strip().replace(' ', '')
+    # planesNum = lines[2].split('=')
+    # planesNum = planesNum[1].strip().replace(' ', '')
+    #
+    # verticalOffset = lines[3].split('=')
+    # verticalOffset = verticalOffset[1].strip().replace(' ', '')
+    #
+    # horizontalOffset = lines[4].split('=')
+    # horizontalOffset = horizontalOffset[1].strip().replace(' ', '')
+    #
+    # increment = lines[5].split('=')
+    # increment = increment[1].strip().replace(' ', '')
 
-    verticalOffset = lines[3].split('=')
-    verticalOffset = verticalOffset[1].strip().replace(' ', '')
+    planes = []
 
-    horizontalOffset = lines[4].split('=')
-    horizontalOffset = horizontalOffset[1].strip().replace(' ', '')
+    for line in lines[2:]:
+        dataLine = line.split(',')
+        try:
+            data = [float(dataLine[0]), float(dataLine[1]), float(dataLine[2])]
+        except:
+            break
 
-    increment = lines[5].split('=')
-    increment = increment[1].strip().replace(' ', '')
+        planes.append(data)
 
-    return axisName, offset, planesNum, verticalOffset, horizontalOffset, increment
+    dataArray = np.array(planes)
 
+    return axisName, offset, dataArray
 
 # ========================================================================
 
@@ -112,8 +124,7 @@ class myForm(Form):
         self.lineEdit.setGeometry(QtCore.QRect(30, 40, 350, 22))
         self.layout_offset.addWidget(self.lineEdit)
 
-        self.default_path, self.default_offset, self.default_planesNum, self.default_verticalOffset, self.default_horizontalOffset, self.default_increment = getDefaultValues(
-            'default_values.txt')
+        self.default_path, self.default_offset, self.default_planes = getDefaultValues('default_values.txt')
 
         self.createTable(self.layout)
 
@@ -144,7 +155,7 @@ class myForm(Form):
     # ---------------------------------------------------------------------------
     def createTable(self, layout):
         self.tableWidget = QtGui.QTableWidget()
-        self.tableWidget.setRowCount(int(self.default_planesNum))
+        self.tableWidget.setRowCount(len(self.default_planes))
         self.tableWidget.setColumnCount(3)
         labels = ['horizontal offset', 'vertical offset', 'increment']
         self.tableWidget.setHorizontalHeaderLabels(labels)
@@ -172,12 +183,13 @@ class myForm(Form):
         labels = ['horizontal offset', 'vertical offset', 'increment']
         rows = self.tableWidget.rowCount()
         cols = self.tableWidget.columnCount()
+        self.default_planes
         for row in range(rows):
-            itemHoff = QtGui.QTableWidgetItem(str(self.default_horizontalOffset))
+            itemHoff = QtGui.QTableWidgetItem(str(self.self.default_planes[0]))
             self.tableWidget.setItem(row, 0, itemHoff)
-            itemVoff = QtGui.QTableWidgetItem(str(self.default_verticalOffset))
+            itemVoff = QtGui.QTableWidgetItem(str(self.default_planes[1]))
             self.tableWidget.setItem(row, 1, itemVoff)
-            itemInc = QtGui.QTableWidgetItem(str(self.default_increment))
+            itemInc = QtGui.QTableWidgetItem(str(self.default_planes[2]))
             self.tableWidget.setItem(row, 2, itemInc)
 
     # ---------------------------------------------------------------------------
