@@ -26,7 +26,11 @@ def movePart(documentName, x=0, y=0, z=0):
 # ---------------------------------------------------------------------------
 
 def interpolate_data(positions):
+    print(positions)
+    print('*')
     positions_arr = np.array(positions)
+    print(positions_arr)
+    print('*')
     positions_arr = positions_arr.reshape(len(positions), 3)
     # print(positions_arr)
     interp_start_x = None
@@ -35,22 +39,26 @@ def interpolate_data(positions):
     rawData = dict()
     interpData = list()
     for pos in positions:
-        # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
-        point = str(pos[1] + 200)
+
         if pos[0] not in rawData:
             rawData[pos[0]] = list()
-            rawData[pos[0]].append(point)
+            rawData[pos[0]].append(pos[:1])
         else:
-            rawData[pos[0]].append(point)
+            rawData[pos[0]].append(pos[:1])
 
-    levels = list(lines.keys())
+    levels = list(rawData.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
     levels.sort()
 
     for level in levels:
+        print('**')
         positions = rawData[level]
+
+        interp_start_x = None
+        interp_end_x = None
+        print(positions)
         for i, pos in enumerate(positions):
-            # print(pos)
+            print(pos)
             if not np.isnan(pos[1]) and not np.isnan(positions[i + 1][1]) and not np.isnan(positions[i + 2][1]) and \
                     interp_start_x is None:
                 interp_start_x = i
@@ -62,9 +70,13 @@ def interpolate_data(positions):
                 interp_end_x = i
                 break
         # print(interp_start_x, interp_end_x)
-
+        if interp_start_x == None and interp_end_x == None:
+          continue
         x = positions_arr[interp_start_x:interp_end_x, 0]
         y = positions_arr[interp_start_x:interp_end_x, 1]
+        print(interp_start_x, interp_end_x)
+        print(x, y)
+        print(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0])
         x_eval = np.arange(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0], 0.1)
 
         y_interp = de.getLinInterp(x_eval, x, y)
@@ -165,13 +177,12 @@ def formatPositions(positions, savePath):
     # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
     lines = dict()
     for pos in positions:
-        # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
-        point = str(pos[1] + 200)
+
         if pos[0] not in lines:
             lines[pos[0]] = list()
-            lines[pos[0]].append(point)
+            lines[pos[0]].append(pos[1])
         else:
-            lines[pos[0]].append(point)
+            lines[pos[0]].append(pos[1])
 
     levels = list(lines.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
@@ -319,7 +330,7 @@ def calculate(axisLabel, planes, origin_offset, mainPath):
     parse_origin_offset = origin_offset.split(',')
     origin_offset = [float(x) for x in parse_origin_offset]
     glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - origin_offset[2]
-    glass_obj.Placement.Base.y = glass_obj.Placement.Base.y - origin_offset[1] - 200
+    glass_obj.Placement.Base.y = glass_obj.Placement.Base.y - origin_offset[1] 
     glass_obj.Placement.Base.z = glass_obj.Placement.Base.z - origin_offset[0]
 
     # glass_obj_rot = glass_obj.Placement.Rotation.toEuler()

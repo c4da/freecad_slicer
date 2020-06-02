@@ -15,6 +15,7 @@ import Show
 
 import sys
 from os import path
+import numpy as np
 
 # ========================================================================
 
@@ -60,7 +61,7 @@ def getDefaultValues(fileName):
 
     planes = []
 
-    for line in lines[2:]:
+    for line in lines[3:]:
         dataLine = line.split(',')
         try:
             data = [float(dataLine[0]), float(dataLine[1]), float(dataLine[2])]
@@ -184,12 +185,12 @@ class myForm(Form):
         rows = self.tableWidget.rowCount()
         cols = self.tableWidget.columnCount()
         self.default_planes
-        for row in range(rows):
-            itemHoff = QtGui.QTableWidgetItem(str(self.self.default_planes[0]))
+        for i, row in enumerate(range(rows)):
+            itemHoff = QtGui.QTableWidgetItem(str(self.default_planes[i, 0]))
             self.tableWidget.setItem(row, 0, itemHoff)
-            itemVoff = QtGui.QTableWidgetItem(str(self.default_planes[1]))
+            itemVoff = QtGui.QTableWidgetItem(str(self.default_planes[i, 1]))
             self.tableWidget.setItem(row, 1, itemVoff)
-            itemInc = QtGui.QTableWidgetItem(str(self.default_planes[2]))
+            itemInc = QtGui.QTableWidgetItem(str(self.default_planes[i, 2]))
             self.tableWidget.setItem(row, 2, itemInc)
 
     # ---------------------------------------------------------------------------

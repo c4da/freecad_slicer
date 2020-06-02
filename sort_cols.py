@@ -1,10 +1,10 @@
 import numpy as np
 
 
-def sort_it(file, sequence):
+def sort_it(fileName, sequence):
     data = []
 
-    f = open(file, 'r')
+    f = open(fileName, 'r')
     text = f.readlines()
     for line in text:
         data_line0 = line.strip().replace(' ', '').split(';')
@@ -25,8 +25,8 @@ def sort_it(file, sequence):
         data[:, m] = data[:, n]
         data[:, n] = temp
 
-    file = file.split('.txt')
-    f2 = open(file[0]+'_seq.txt', 'w')
+    fileName = fileName.split('.txt')
+    f2 = open(fileName[0]+'_seq.txt', 'w')
 
     for line in data:
         line = (str(line[0]) + ';' + str(line[1:]) + '\n').replace("'", '').replace('[', '').replace(']', '')
