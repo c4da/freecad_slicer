@@ -7,6 +7,7 @@ def sort_it(fileName, sequence):
     f = open(fileName, 'r')
     text = f.readlines()
     for line in text:
+        # 0.0;0.0, 0.0, 0.0,
         data_line0 = line.strip().replace(' ', '').split(';')
         data_line1 = data_line0[1].replace(' ', '').split(',')
 
@@ -29,8 +30,13 @@ def sort_it(fileName, sequence):
     f2 = open(fileName[0]+'_seq.txt', 'w')
 
     for line in data:
-        line = (str(line[0]) + ';' + str(line[1:]) + '\n').replace("'", '').replace('[', '').replace(']', '')
-        f2.write(line)
+        line = (str(line[0]) + ';')
+        for i, item in enumerate(line[1:]):
+            f2.write(item)
+            if i < len(line[1:]):
+                f2.write(',')
+        # + str(line[1:]) + '\n').replace("'", '').replace('[', '').replace(']', '')
+        # f2.write(line)
     f2.close()
 
 if __name__ == "__main__":

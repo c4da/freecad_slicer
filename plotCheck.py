@@ -52,6 +52,7 @@ def processData(data):
 
 def makePlots(dataIn, path, name = ''):
     data = processData(dataIn)
+    # print(data)
 
     data_x = data[:, 0]
     data_y = data[:, 1]

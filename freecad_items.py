@@ -25,72 +25,72 @@ def movePart(documentName, x=0, y=0, z=0):
 
 # ---------------------------------------------------------------------------
 
-def interpolate_data(positions):
-    print(positions)
-    print('*')
-    positions_arr = np.array(positions)
-    print(positions_arr)
-    print('*')
-    positions_arr = positions_arr.reshape(len(positions), 3)
-    # print(positions_arr)
+def interpolate_data(positions, savePath):
+
     interp_start_x = None
     interp_end_x = None
-    # print(positions)
-    rawData = dict()
-    interpData = list()
+
+    dataPlane = dict()
+    dataInterp = []
+
     for pos in positions:
-
-        if pos[0] not in rawData:
-            rawData[pos[0]] = list()
-            rawData[pos[0]].append(pos[:1])
+        if pos[2] not in dataPlane:
+            dataPlane[pos[2]] = list()
+            dataPlane[pos[2]].append(pos)
         else:
-            rawData[pos[0]].append(pos[:1])
+            dataPlane[pos[2]].append(pos)
 
-    levels = list(rawData.keys())
-    # App.Console.PrintMessage(("\n levels " + str(levels)))
-    levels.sort()
+    levels = list(dataPlane.keys())
 
     for level in levels:
-        print('**')
-        positions = rawData[level]
+        section = np.array(dataPlane[level])
+        section[:, 1] = [0 if np.isnan(x) else x for x in section[:, 1]]
 
-        interp_start_x = None
-        interp_end_x = None
-        print(positions)
-        for i, pos in enumerate(positions):
-            print(pos)
-            if not np.isnan(pos[1]) and not np.isnan(positions[i + 1][1]) and not np.isnan(positions[i + 2][1]) and \
-                    interp_start_x is None:
-                interp_start_x = i
-                print('interp start interval set at row: ', i)
-                continue
-            if not np.isnan(pos[1]) and interp_start_x != None and np.isnan(positions[i + 1][1]) and \
-                    np.isnan(positions[i + 2][1]):
-                print('interp end interval set at row: ', i)
-                interp_end_x = i
-                break
-        # print(interp_start_x, interp_end_x)
-        if interp_start_x == None and interp_end_x == None:
-          continue
-        x = positions_arr[interp_start_x:interp_end_x, 0]
-        y = positions_arr[interp_start_x:interp_end_x, 1]
-        print(interp_start_x, interp_end_x)
-        print(x, y)
-        print(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0])
-        x_eval = np.arange(positions_arr[interp_start_x, 0], positions_arr[interp_end_x, 0], 0.1)
+        # for i, point in enumerate(section):
+        #     if not np.isnan(point[1]) and interp_start_x == None:
+        #         interp_start_x = i
+        #         continue
+        #
+        #     if np.isnan(point[1]) and interp_start_x != None and interp_end_x == None:
+        #         interp_end_x = i - 1
+        #         break
+        #
+        # print(level, interp_start_x, interp_end_x)
+        # if interp_end_x == None and interp_start_x == None:
+        #     del dataPlane[level]
+        #     continue
 
+        # x_eval = np.arange(section[interp_start_x, 0], section[interp_end_x, 0], 0.1)
+        # x = section[interp_start_x:interp_end_x, 0]
+        # y = section[interp_start_x:interp_end_x, 1]
+        # y_interp = de.getLinInterp(x_eval, x, y)
+        # z = np.ones((1, len(x_eval))) * section[0, 2]
+
+        x = section[:, 0]
+        x_eval = np.arange(section[0, 0], section[-1, 0], 0.1)
+        y = section[:, 1]
+        z = np.ones((1, len(x_eval))) * section[0, 2]
         y_interp = de.getLinInterp(x_eval, x, y)
-        data_z = np.ones((1, len(x_eval))) * positions_arr[0, 2]
 
-        data = []
-        for i, x in enumerate(x_eval):
-            y = y_interp[i]
-            z = data_z[0, i]
-            pos = [x, y, z]
-            data.append(pos)
+        # dataPlane[level] = np.array([x_eval, y_interp])
 
-        interpData += data
-    return interpData
+        f = open(savePath+'saved_data_format_interp_'+str(level)+'.txt', 'w')
+
+        for i in range(len(x_eval)):
+            line = str(round(x_eval[i], 1)) + '; ' + str(round(y_interp[i], 4)) +'\n'
+            f.write(line)
+
+        f.close()
+
+        # print(x_eval)
+        # print(y_interp)
+        # print(section)
+
+        for i in range(len(x_eval)):
+            dataInterp.append([x_eval[i], y_interp[i], section[0, 2]])
+
+
+    return dataInterp
 
 # ---------------------------------------------------------------------------
 
@@ -173,28 +173,53 @@ def formatPositions(positions, savePath):
     :param savePath:
     :return:
     """
-    # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
-    # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
+    # x1;y1(x1, z1),y2(x1, z2),y3(x1, z3)
+    # x2;y1(x2, z1),y2(x2, z2),y3(x2, z3)
     lines = dict()
     for pos in positions:
 
-        if pos[0] not in lines:
-            lines[pos[0]] = list()
-            lines[pos[0]].append(pos[1])
+        if pos[2] not in lines:
+            lines[pos[2]] = list()
+            lines[pos[2]].append(pos)
         else:
-            lines[pos[0]].append(pos[1])
+            lines[pos[2]].append(pos)
 
     levels = list(lines.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
     levels.sort()
-    # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + 'saved_data_format.txt', 'w')
-    for level in levels:
-        line = (str(level) + ';' + str(lines[level]) + '\n').replace("'", '').replace('[', '').replace(']', '')
-        f.write(line)
+
+    for i in range(len(lines[levels[0]])):
+        f.write(str(round(lines[levels[0]][i][0], 2)))
+        f.write('; ')
+
+        for j, level in enumerate(levels):
+            f.write(str(round(lines[level][i][1], 2)))
+            if j < len(levels)-1:
+                f.write(', ')
+
+        f.write('\n')
+
+    f.close()
+
+
+    # for level in levels:
+    #     f = open(savePath+'saved_data_format_' + str(level) + '.txt', 'w')
+    #
+    #     for i in range(len(lines[level])):
+    #         line = str(round(lines[level][i][0], 1)) + '; ' + str(round(lines[level][i][1], 4)) + '\n'
+    #         f.write(line)
+    #
+    #     f.close()
+
+    # # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
+    # f = open(savePath + 'saved_data_format.txt', 'w')
+    # for level in levels:
+    #     line = (str(level) + ';' + str(lines[level]) + '\n').replace("'", '').replace('[', '').replace(']', '')
+    #     f.write(line)
         # f.write(str(level)+';')
         # f.write(str(lines[level][1:-1])+'\n')
-    f.close()
+    # f.close()
 
     return 0
 
@@ -212,34 +237,57 @@ def formatInterpolatedPositions(positions, savePath):
     """
     # x1;y1(x1, z1);y2(x1, z2);y3(x1, z3)
     # x2;y1(x2, z1);y2(x2, z2);y3(x2, z3)
+    # lines = dict()
+    # for pos in positions:
+    #     # print(pos)
+    #     # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
+    #     point = str(pos[1] + 200)
+    #     if pos[2] not in lines:
+    #         lines[pos[2]] = list()
+    #         lines[pos[2]].append(point)
+    #     else:
+    #         lines[pos[2]].append(point)
+
     lines = dict()
     for pos in positions:
-        # print(pos)
-        # point = str(pos[1])+'('+str(pos[0])+','+str(pos[2])+');'
-        point = str(pos[1] + 200)
-        if pos[0] not in lines:
-            lines[pos[0]] = list()
-            lines[pos[0]].append(point)
+
+        if pos[2] not in lines:
+            lines[pos[2]] = list()
+            lines[pos[2]].append(pos)
         else:
-            lines[pos[0]].append(point)
+            lines[pos[2]].append(pos)
 
     levels = list(lines.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
     levels.sort()
     # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + 'saved_data_format_interp.txt', 'w')
-    for level in levels:
-        line = (str(level) + ';' + str(lines[level]) + '\n').replace("'", '').replace('[', '').replace(']', '')
-        f.write(line)
-        # f.write(str(level)+';')
-        # f.write(str(lines[level][1:-1])+'\n')
+
+    for i in range(len(lines[levels[0]])):
+        f.write(str(round(lines[levels[0]][i][0], 2)))
+        f.write('; ')
+
+        for j, level in enumerate(levels):
+            f.write(str(round(lines[level][i][1], 2)))
+            if j < len(levels)-1:
+                f.write(', ')
+
+        f.write('\n')
+
     f.close()
+    # f = open(savePath + 'saved_data_format_interp.txt', 'w')
+    # for level in levels:
+    #     line = (str(level) + ';' + str(lines[level]) + '\n').replace("'", '').replace('[', '').replace(']', '')
+    #     f.write(line)
+    #     # f.write(str(level)+';')
+    #     # f.write(str(lines[level][1:-1])+'\n')
+    # f.close()
 
     return 0
 
 # ---------------------------------------------------------------------------
 
-def calculate(axisLabel, planes, origin_offset, mainPath):
+def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
     # modelPath = '/home/cada/python3/freecad/predni.stp'
     # print('clicked calculate')
 
@@ -410,16 +458,31 @@ def calculate(axisLabel, planes, origin_offset, mainPath):
         prev_pos = pos[2]
 
     savePos.close()
-    positions_interp = interpolate_data(positions)
+    positionsArray = np.array(positions)
+    data = []
+
+    f = open(savePath + 'saved_data.txt', 'r')
+    text = f.readlines()
+    for line in text:
+
+        data_line = line.strip().replace(' ', '').split(';')
+        if len(data_line) == 3:
+            data_line = [float(x) for x in data_line]
+            data += [data_line]
+
+    positionsArray = np.array(data)
+    positions_interp = interpolate_data(positionsArray, savePath)
+    positionsArrayInterp = np.array(positions_interp)
     formatInterpolatedPositions(positions_interp, savePath)
-    formatPositions(positions, savePath)
-    plotCheck.makePlots(positions, savePath)
+    formatPositions(positionsArray, savePath)
+    plotCheck.makePlots(positionsArray, savePath)
     plotCheck.makePlots(positions_interp, savePath, '_interp')
 
-    new_sequence = [0, 2] #nulty sloupec zustava, prvni sloupec se prohodi s druhym
-    file_seq = savePath + 'saved_data_format.txt'
+    # new_sequence = [0, 3] #nulty sloupec zustava, prvni sloupec se prohodi s 4
+    # new_sequence = sortCols
+    file_seq = savePath + 'saved_data_format_interp.txt'
     #file_seq = savePath + 'saved_data_format_interp.txt'
-    sort_cols.sort_it(file_seq, new_sequence)
+    sort_cols.sort_it(file_seq, sortCols)
 
 
     measure_end = time.time()

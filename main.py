@@ -35,6 +35,7 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+
 # ---------------------------------------------------------------------------
 
 def getDefaultValues(fileName):
@@ -46,6 +47,11 @@ def getDefaultValues(fileName):
 
     offset = lines[1].split('=')
     offset = offset[1].strip().replace(' ', '')
+
+    sortCols_ = lines[2].split('=')
+    sortCols_ = sortCols_[1].strip().replace(']', '').replace('[', '').split(',')
+    sortCols = [int(x) for x in sortCols_]
+
 
     # planesNum = lines[2].split('=')
     # planesNum = planesNum[1].strip().replace(' ', '')
@@ -61,7 +67,7 @@ def getDefaultValues(fileName):
 
     planes = []
 
-    for line in lines[3:]:
+    for line in lines[4:]:
         dataLine = line.split(',')
         try:
             data = [float(dataLine[0]), float(dataLine[1]), float(dataLine[2])]
@@ -72,7 +78,8 @@ def getDefaultValues(fileName):
 
     dataArray = np.array(planes)
 
-    return axisName, offset, dataArray
+    return axisName, offset, sortCols, dataArray
+
 
 # ========================================================================
 
@@ -97,6 +104,7 @@ class Form(object):
 
     def setText(self, control, text):
         control.setText(_translate(self.title, text, None))
+
 
 # ========================================================================
 
@@ -125,7 +133,7 @@ class myForm(Form):
         self.lineEdit.setGeometry(QtCore.QRect(30, 40, 350, 22))
         self.layout_offset.addWidget(self.lineEdit)
 
-        self.default_path, self.default_offset, self.default_planes = getDefaultValues('default_values.txt')
+        self.default_path, self.default_offset, self.sortCols, self.default_planes = getDefaultValues('default_values.txt')
 
         self.createTable(self.layout)
 
@@ -184,7 +192,7 @@ class myForm(Form):
         labels = ['horizontal offset', 'vertical offset', 'increment']
         rows = self.tableWidget.rowCount()
         cols = self.tableWidget.columnCount()
-        self.default_planes
+
         for i, row in enumerate(range(rows)):
             itemHoff = QtGui.QTableWidgetItem(str(self.default_planes[i, 0]))
             self.tableWidget.setItem(row, 0, itemHoff)
@@ -220,7 +228,7 @@ class myForm(Form):
 
     def delTableRow(self):
         rows = self.tableWidget.rowCount()
-        self.tableWidget.removeRow(rows-1)
+        self.tableWidget.removeRow(rows - 1)
 
     # ---------------------------------------------------------------------------
 
@@ -241,12 +249,13 @@ class myForm(Form):
         attributes = self.linePath.text()
         data = self.getTableData()
         origin_offset = self.lineEdit.text()
+        sortCols = self.sortCols
         # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
         #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
         # if os.path.isfile(modelPath\):
         #     print("CAD file exist")
         App.Console.PrintMessage((attributes, data, origin_offset))
-        results = fi.calculate(attributes, data, origin_offset, os.path.dirname(os.path.abspath(__file__)))
+        results = fi.calculate(attributes, data, origin_offset, sortCols, os.path.dirname(os.path.abspath(__file__)))
         if results == 0:
             message_box = QtGui.QMessageBox()
             message_box.setText(str('All done!'))
@@ -254,7 +263,8 @@ class myForm(Form):
             message_box.exec_()
         else:
             message_box = QtGui.QMessageBox()
-            message_box.setText(str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
+            message_box.setText(
+                str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
             message_box.addButton("OK", QtGui.QMessageBox.YesRole)
             message_box.exec_()
             # message_box.show()
@@ -269,6 +279,7 @@ class myForm(Form):
         #     message_box.exec_()
         #     # message_box.show()
         #     print("CAD file does not exist")
+
 
 # ========================================================================
 
