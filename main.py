@@ -255,19 +255,20 @@ class myForm(Form):
 
         # QtGui.QCursor.setShape(QtGui.QCursor(QtCore.Qt.WaitCursor))
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        try:
-            attributes = self.linePath.text()
-            data = self.getTableData()
-            origin_offset = self.lineEdit.text()
-            sortCols = self.sortCols
-            # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
-            #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
-            # if os.path.isfile(modelPath\):
-            #     print("CAD file exist")
-            App.Console.PrintMessage((attributes, data, origin_offset))
-            results = fi.calculate(attributes, data, origin_offset, sortCols, os.path.dirname(os.path.abspath(__file__)))
-        except Exception as CustomException:
-            print('Script error: ', CustomException)
+        # try:
+        attributes = self.linePath.text()
+        data = self.getTableData()
+        origin_offset = self.lineEdit.text()
+        sortCols = self.sortCols
+        # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
+        #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+        # if os.path.isfile(modelPath\):
+        #     print("CAD file exist")
+        App.Console.PrintMessage((attributes, data, origin_offset))
+        results = fi.calculate(attributes, data, origin_offset, sortCols, os.path.dirname(os.path.abspath(__file__)))
+        # except Exception as CustomException:
+        #     print('Script error: ', CustomException)
+        #     results = 1
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         if results == 0:
             message_box = QtGui.QMessageBox()
@@ -280,19 +281,7 @@ class myForm(Form):
                 str('An Error has occured. Please see the command line for details. \nAnd restart the application.'))
             message_box.addButton("OK", QtGui.QMessageBox.YesRole)
             message_box.exec_()
-            # message_box.show()
-            # buttonReply = QtGui.QMessageBox.question(self, 'Notification:', "All done!",
-            #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
-        # else:
-        #     # buttonReply = QtGui.QMessageBox.question(self, 'Error:', "File does not exists.",
-        #     #                                          QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
-        #     message_box = QtGui.QMessageBox()
-        #     message_box.setText(str('File does not exists!'))
-        #     message_box.addButton("OK", QtGui.QMessageBox.YesRole)
-        #     message_box.exec_()
-        #     # message_box.show()
-        #     print("CAD file does not exist")
-        # QtGui.QCursor.setShape(QtGui.ArrowCursor)
+
 
 
 

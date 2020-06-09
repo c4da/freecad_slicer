@@ -16,6 +16,7 @@ import platform
 import data_eval as de
 import sort_cols
 
+
 # ---------------------------------------------------------------------------
 
 def movePart(documentName, x=0, y=0, z=0):
@@ -23,10 +24,10 @@ def movePart(documentName, x=0, y=0, z=0):
                                                                           App.Rotation(App.Vector(0, 0, 0.),
                                                                                        0), App.Vector(0, 0, 0))
 
+
 # ---------------------------------------------------------------------------
 
 def interpolate_data(positions, savePath):
-
     interp_start_x = None
     interp_end_x = None
 
@@ -74,10 +75,10 @@ def interpolate_data(positions, savePath):
 
         # dataPlane[level] = np.array([x_eval, y_interp])
 
-        f = open(savePath+'saved_data_format_interp_'+str(level)+'.txt', 'w')
+        f = open(savePath + 'saved_data_format_interp_' + str(level) + '.txt', 'w')
 
         for i in range(len(x_eval)):
-            line = str(round(x_eval[i], 1)) + '; ' + str(round(y_interp[i], 4)) +'\n'
+            line = str(round(x_eval[i], 1)) + '; ' + str(round(y_interp[i], 4)) + '\n'
             f.write(line)
 
         f.close()
@@ -89,18 +90,20 @@ def interpolate_data(positions, savePath):
         for i in range(len(x_eval)):
             dataInterp.append([x_eval[i], y_interp[i], section[0, 2]])
 
-
     return dataInterp
+
 
 # ---------------------------------------------------------------------------
 
 def printMessage(msg):
     pass
 
+
 # ---------------------------------------------------------------------------
 
 def getObjects(documentName):
     return App.getDocument(documentName).Objects
+
 
 # ---------------------------------------------------------------------------
 
@@ -116,6 +119,7 @@ def findObjectViaLabel(documentName, label):
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
+
 # ---------------------------------------------------------------------------
 
 def findObjectViaName(documentName, name):
@@ -129,6 +133,7 @@ def findObjectViaName(documentName, name):
     print('Glass was not found. Please, check the name of the glass model.\n')
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
+
 
 # ---------------------------------------------------------------------------
 def findGlassObj(documentName):
@@ -150,6 +155,7 @@ def findGlassObj(documentName):
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
     return 1
 
+
 # ---------------------------------------------------------------------------
 def showOnlyGlassObject(documentName):
     objects = getObjects(documentName)
@@ -162,6 +168,7 @@ def showOnlyGlassObject(documentName):
                 App.ActiveDocument.recompute()
             else:
                 pass
+
 
 # ---------------------------------------------------------------------------
 def formatPositions(positions, savePath):
@@ -187,6 +194,32 @@ def formatPositions(positions, savePath):
     levels = list(lines.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
     levels.sort()
+
+    for level in levels:
+        # deleting negative values because of the Hoffset
+        negValues = 0
+        checkedPos = []
+        # lines[level] = [x for x in lines[level] if x >=0 ]
+        for pos in lines[level]:
+            if pos[0] < 0:
+                negValues += 1
+            else:
+                checkedPos.append(pos)
+
+        checkedPos += [0, 0, 0] * negValues
+        lines[level] = checkedPos
+
+    for level in levels:
+        # adding zero values because of the positive Hoffset
+        i = 0
+        for pos in lines[level]:
+            if pos[0] == 0:
+                break
+            else:
+                i += 1
+
+        lines[level] = [0, 0, 0] * i + lines[level][:len(lines[level]) - i]
+
     f = open(savePath + 'saved_data_format.txt', 'w')
 
     for i in range(len(lines[levels[0]])):
@@ -195,13 +228,12 @@ def formatPositions(positions, savePath):
 
         for j, level in enumerate(levels):
             f.write(str(round(lines[level][i][1], 2)))
-            if j < len(levels)-1:
+            if j < len(levels) - 1:
                 f.write(', ')
 
         f.write('\n')
 
     f.close()
-
 
     # for level in levels:
     #     f = open(savePath+'saved_data_format_' + str(level) + '.txt', 'w')
@@ -217,8 +249,8 @@ def formatPositions(positions, savePath):
     # for level in levels:
     #     line = (str(level) + ';' + str(lines[level]) + '\n').replace("'", '').replace('[', '').replace(']', '')
     #     f.write(line)
-        # f.write(str(level)+';')
-        # f.write(str(lines[level][1:-1])+'\n')
+    # f.write(str(level)+';')
+    # f.write(str(lines[level][1:-1])+'\n')
     # f.close()
 
     return 0
@@ -260,6 +292,34 @@ def formatInterpolatedPositions(positions, savePath):
     levels = list(lines.keys())
     # App.Console.PrintMessage(("\n levels " + str(levels)))
     levels.sort()
+
+    for level in levels:
+        # deleting negative values because of the Hoffset
+        negValues = 0
+        checkedPos = []
+        # lines[level] = [x for x in lines[level] if x >=0 ]
+        for pos in lines[level]:
+            if pos[0] < 0:
+                negValues += 1
+            else:
+                checkedPos.append(pos)
+
+        checkedPos += [[0, 0, 0]] * negValues
+        lines[level] = checkedPos
+
+    for level in levels:
+        # adding zero values because of the positive Hoffset
+        i = 0
+        print(lines[level][:20])
+        for pos in lines[level]:
+            print(pos)
+            if pos[0] == 0:
+                break
+            else:
+                i += 1
+
+        lines[level] = [[0, 0, 0]] * i + lines[level][:len(lines[level]) - i]
+
     # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + 'saved_data_format_interp.txt', 'w')
 
@@ -269,7 +329,7 @@ def formatInterpolatedPositions(positions, savePath):
 
         for j, level in enumerate(levels):
             f.write(str(round(lines[level][i][1], 2)))
-            if j < len(levels)-1:
+            if j < len(levels) - 1:
                 f.write(', ')
 
         f.write('\n')
@@ -284,6 +344,7 @@ def formatInterpolatedPositions(positions, savePath):
     # f.close()
 
     return 0
+
 
 # ---------------------------------------------------------------------------
 
@@ -378,7 +439,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
     parse_origin_offset = origin_offset.split(',')
     origin_offset = [float(x) for x in parse_origin_offset]
     glass_obj.Placement.Base.x = glass_obj.Placement.Base.x - origin_offset[2]
-    glass_obj.Placement.Base.y = glass_obj.Placement.Base.y - origin_offset[1] 
+    glass_obj.Placement.Base.y = glass_obj.Placement.Base.y - origin_offset[1]
     glass_obj.Placement.Base.z = glass_obj.Placement.Base.z - origin_offset[0]
 
     # glass_obj_rot = glass_obj.Placement.Rotation.toEuler()
@@ -423,17 +484,17 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
 
             if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
                 # App.Console.PrintMessage(("\n positions: " + str(stepSum) + str(v.y) + str(itemVoff_sum)))
-                positions.append([float(stepSum), float(v.y), float(itemVoff_sum)])
+                positions.append([float(stepSum + itemHoff), float(v.y), float(itemVoff_sum)])
 
             else:
-                positions.append([float(stepSum), np.nan, float(itemVoff_sum)])
+                positions.append([float(stepSum + itemHoff), np.nan, float(itemVoff_sum)])
 
             if stepSum > 1500:
                 App.Console.PrintMessage("End of the projection limit.")
                 break
 
-            stepSum += x + itemHoff
-            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x + itemHoff
+            stepSum += x
+            glass_obj.Placement.Base.z = glass_obj.Placement.Base.z + x
             # measuring_position[0] = measuring_position[0] - x
 
         # measuring_position[2] -= itemVoff_sum
@@ -441,7 +502,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
     savePath = mainPath
 
     if platform.system != 'Linux':
-        savePath = savePath+'/'
+        savePath = savePath + '/'
         savePos = open(savePath + 'saved_data.txt', 'w')
     else:
         savePath = savePath + '\\'
@@ -463,6 +524,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
 
     f = open(savePath + 'saved_data.txt', 'r')
     text = f.readlines()
+    f.close()
     for line in text:
 
         data_line = line.strip().replace(' ', '').split(';')
@@ -481,9 +543,8 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
     # new_sequence = [0, 3] #nulty sloupec zustava, prvni sloupec se prohodi s 4
     # new_sequence = sortCols
     file_seq = savePath + 'saved_data_format_interp.txt'
-    #file_seq = savePath + 'saved_data_format_interp.txt'
+    # file_seq = savePath + 'saved_data_format_interp.txt'
     sort_cols.sort_it(file_seq, sortCols)
-
 
     measure_end = time.time()
     print('time: ', measure_end - measure_start)

@@ -1,58 +1,47 @@
 import numpy as np
 import data_eval as de
 
-def interpolate_data(positions):
 
-    interp_start_x = None
-    interp_end_x = None
-
-    dataPlane = dict()
-    dataPlaneInterp = dict()
-
-
+def formatPositions(positions, savePath):
+    """
+    kvuli pootoceni globalniho SS z inventoru do SS makety je:
+    x_Maketa == -z (hodnoty jsou jiz kladne z predchozi operace)
+    z_Maketa == -x (hodnoty jsou jiz kladne z predchozi operace)
+    :param positions:
+    :param savePath:
+    :return:
+    """
+    # x1;y1(x1, z1),y2(x1, z2),y3(x1, z3)
+    # x2;y1(x2, z1),y2(x2, z2),y3(x2, z3)
+    lines = dict()
     for pos in positions:
-        if pos[2] not in dataPlane:
-            dataPlane[pos[2]] = list()
-            dataPlane[pos[2]].append(pos)
+
+        if pos[2] not in lines:
+            lines[pos[2]] = list()
+            lines[pos[2]].append(pos)
         else:
-            dataPlane[pos[2]].append(pos)
+            lines[pos[2]].append(pos)
 
-    levels = list(dataPlane.keys())
+    levels = list(lines.keys())
+    # App.Console.PrintMessage(("\n levels " + str(levels)))
+    levels.sort()
+    f = open(savePath + 'saved_data_format_test.txt', 'w')
 
-    for level in levels:
-        section = np.array(dataPlane[level])
+    for i in range(len(lines[levels[0]])):
+        f.write(str(round(lines[levels[0]][i][0], 2)))
+        f.write('; ')
 
-        for i, point in enumerate(section):
-            if not np.isnan(point[1]) and interp_start_x == None:
-                interp_start_x = i
-                continue
+        for j, level in enumerate(levels):
+            f.write(str(round(lines[level][i][1], 2)))
+            if j < len(levels) - 1:
+                f.write(', ')
 
-            if np.isnan(point[1]) and interp_start_x != None and interp_end_x == None:
-                interp_end_x = i - 1
-                break
+        f.write('\n')
 
-        print(level, interp_start_x, interp_end_x)
-        if interp_end_x == None and interp_start_x == None:
-            del dataPlane[level]
-            continue
-
-        x_eval = np.arange(section[interp_start_x, 0], section[interp_end_x, 0], 0.1)
-        x = section[interp_start_x:interp_end_x, 0]
-        y = section[interp_start_x:interp_end_x, 1]
-        y_interp = de.getLinInterp(x_eval, x, y)
-        z = np.ones((1, len(x_eval))) * section[0, 2]
-
-        dataPlane[level] = np.array([x_eval, y_interp])
-
-        f = open('/home/cada/python3/freecad/saved_data_format_interp_'+str(level)+'.txt', 'w')
-
-        for i in range(len(x_eval)):
-            line = str(round(x_eval[i], 1)) + '; ' + str(round(y_interp[i], 4)) +'\n'
-            f.write(line)
-
-        f.close()
+    f.close()
 
     return 0
+
 
 if __name__ == "__main__":
 
@@ -67,11 +56,10 @@ if __name__ == "__main__":
         data_line = line.strip().replace(' ', '').split(';')
         if len(data_line) == 3:
             data_line = [float(x) for x in data_line]
-            data +=[data_line]
-
+            data += [data_line]
 
     data = np.array(data)
 
     print(data)
 
-    interpolate_data(data)
+    formatPositions(data, '/home/cada/python3/freecad/')
