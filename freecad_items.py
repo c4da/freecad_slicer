@@ -206,7 +206,7 @@ def formatPositions(positions, savePath):
             else:
                 checkedPos.append(pos)
 
-        checkedPos += [0, 0, 0] * negValues
+        checkedPos += [[0, 0, 0]] * negValues
         lines[level] = checkedPos
 
     for level in levels:
@@ -218,7 +218,7 @@ def formatPositions(positions, savePath):
             else:
                 i += 1
 
-        lines[level] = [0, 0, 0] * i + lines[level][:len(lines[level]) - i]
+        lines[level] = [[0, 0, 0]] * i + lines[level][:len(lines[level]) - i]
 
     f = open(savePath + 'saved_data_format.txt', 'w')
 
@@ -310,7 +310,7 @@ def formatInterpolatedPositions(positions, savePath):
     for level in levels:
         # adding zero values because of the positive Hoffset
         i = 0
-        print(lines[level][:20])
+        # print(lines[level][:20])
         for pos in lines[level]:
             print(pos)
             if pos[0] == 0:
@@ -319,6 +319,8 @@ def formatInterpolatedPositions(positions, savePath):
                 i += 1
 
         lines[level] = [[0, 0, 0]] * i + lines[level][:len(lines[level]) - i]
+
+    print(lines[level])
 
     # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + 'saved_data_format_interp.txt', 'w')
@@ -490,7 +492,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
                 positions.append([float(stepSum + itemHoff), np.nan, float(itemVoff_sum)])
 
             if stepSum > 1500:
-                App.Console.PrintMessage("End of the projection limit.")
+                App.Console.PrintMessage("End of the projection limit -> x = 1500 mm.")
                 break
 
             stepSum += x
