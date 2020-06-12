@@ -68,7 +68,8 @@ def interpolate_data(positions, savePath):
         # z = np.ones((1, len(x_eval))) * section[0, 2]
 
         x = section[:, 0]
-        x_eval = np.arange(section[0, 0], section[-1, 0], 0.1)
+        # x_eval = np.arange(0.0, section[-1, 0], 0.1)
+        x_eval = np.arange(0.0, 1500.0, 0.1)
         y = section[:, 1]
         z = np.ones((1, len(x_eval))) * section[0, 2]
         y_interp = de.getLinInterp(x_eval, x, y)
@@ -206,19 +207,40 @@ def formatPositions(positions, savePath):
             else:
                 checkedPos.append(pos)
 
-        checkedPos += [[0, 0, 0]] * negValues
+        checkedPos += [[0, np.nan, level]] * negValues
         lines[level] = checkedPos
 
     for level in levels:
         # adding zero values because of the positive Hoffset
+        # and cutting the values above x = 1500
         i = 0
+        # print(lines[level][:20])
+
         for pos in lines[level]:
-            if pos[0] == 0:
+            # print(pos)
+            if pos[0] > 1500:
                 break
             else:
                 i += 1
+        lines[level] = lines[level][:i]
+        if lines[level][0][0] != 0:
+            increment = abs(lines[level][1][0] - lines[level][0][0])
+            k = int(lines[level][0][0]/increment) + 1
+            missing_data = []
+            for j in range(k):
+                missing_data.append([j*increment, np.nan, level])
 
-        lines[level] = [[0, 0, 0]] * i + lines[level][:len(lines[level]) - i]
+            lines[level] = missing_data + lines[level]
+        print(len(lines[level]))
+        print(lines[level][0], lines[level][-1], i)
+
+
+    # for level in levels:
+    #     if lines[level][-1][0] < 1500:
+    #
+    #     for pos in lines[level]:
+
+
 
     f = open(savePath + 'saved_data_format.txt', 'w')
 
@@ -304,23 +326,33 @@ def formatInterpolatedPositions(positions, savePath):
             else:
                 checkedPos.append(pos)
 
-        checkedPos += [[0, 0, 0]] * negValues
+        checkedPos += [[0, 0, level]] * negValues
         lines[level] = checkedPos
 
     for level in levels:
         # adding zero values because of the positive Hoffset
+        # and cutting the values above x = 1500
         i = 0
         # print(lines[level][:20])
         for pos in lines[level]:
-            print(pos)
-            if pos[0] == 0:
+            # print(pos)
+            if pos[0] > 1500:
                 break
             else:
                 i += 1
+        lines[level] = lines[level][:i]
+        if lines[level][0][0] != 0:
+            increment = abs(lines[level][1][0] - lines[level][0][0])
+            k = int(lines[level][0][0]/increment) + 1
+            missing_data = []
+            for j in range(k):
+                missing_data.append([j*increment, 0, level])
 
-        lines[level] = [[0, 0, 0]] * i + lines[level][:len(lines[level]) - i]
+            lines[level] = missing_data + lines[level]
+        print(len(lines[level]))
+        print(lines[level][0], lines[level][-1], i)
 
-    print(lines[level])
+
 
     # App.Console.PrintMessage(("\n save path format "+savePath+'\\saved_data_format.txt'))
     f = open(savePath + 'saved_data_format_interp.txt', 'w')
@@ -330,6 +362,7 @@ def formatInterpolatedPositions(positions, savePath):
         f.write('; ')
 
         for j, level in enumerate(levels):
+            # print(len(lines[level]))
             f.write(str(round(lines[level][i][1], 2)))
             if j < len(levels) - 1:
                 f.write(', ')

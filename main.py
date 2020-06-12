@@ -254,21 +254,22 @@ class myForm(Form):
         # print(dir(QtGui.QCursor))
 
         # QtGui.QCursor.setShape(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        try:
-            attributes = self.linePath.text()
-            data = self.getTableData()
-            origin_offset = self.lineEdit.text()
-            sortCols = self.sortCols
         # buttonReply = QtGui.QMessageBox.question(self, 'Error', "File does not exists.",
         #                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
         # if os.path.isfile(modelPath):
         #     print("CAD file exist")
-            App.Console.PrintMessage((attributes, data, origin_offset))
-            results = fi.calculate(attributes, data, origin_offset, sortCols, os.path.dirname(os.path.abspath(__file__)))
-        except Exception as CustomException:
-            print('Script error: ', CustomException)
-            results = 1
+        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        # try:
+        attributes = self.linePath.text()
+        data = self.getTableData()
+        origin_offset = self.lineEdit.text()
+        sortCols = self.sortCols
+
+        App.Console.PrintMessage((attributes, data, origin_offset))
+        results = fi.calculate(attributes, data, origin_offset, sortCols, os.path.dirname(os.path.abspath(__file__)))
+        # except Exception as CustomException:
+        #     print('Script error: ', CustomException)
+        #     results = 1
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         if results == 0:
             message_box = QtGui.QMessageBox()
