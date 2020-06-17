@@ -23,13 +23,13 @@ def sort_it(fileName, sequence):
 
     origin = np.arange(0, len(data[0, :]), 1)
     sequenceCheck = []
-    for m, n in zip(sequence, origin):
+    for m, n in zip(sequence[:len(data[0,:])], origin):
         # print(m, n)
         if m == n:
             # print(True)
             continue
 
-        else:
+        elif m < origin[-1]:
             print('swapping: ', m, n)
             sequenceCheck.append([m, n])
             sequenceCheck.append([n, m])
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     # 350.0;49.36261338865444, 34.54760469549561, 55.54760469549561
 
 
-    keys = [0, 3, 2, 1]
+    keys = [0, 3, 20, 1, 5, 10]
     sort_it(file, keys)
 
     # data = []
