@@ -519,7 +519,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
 
             if abs(v.x) < 1.e-12 and abs(v.z) < 1.e-12:
                 # App.Console.PrintMessage(("\n positions: " + str(stepSum) + str(v.y) + str(itemVoff_sum)))
-                positions.append([float(stepSum + itemHoff), float(v.y), float(itemVoff_sum)])
+                positions.append([float(stepSum + itemHoff), float(v.y)*1000, float(itemVoff_sum)])
 
             else:
                 positions.append([float(stepSum + itemHoff), np.nan, float(itemVoff_sum)])
