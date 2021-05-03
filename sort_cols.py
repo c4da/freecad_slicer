@@ -11,11 +11,12 @@ def sort_it(fileName, sequence):
         data_line0 = line.strip().replace(' ', '').split(';')
         data_line1 = data_line0[1].replace(' ', '').split(',')
 
-        data_line0 = [float(data_line0[0])]
-        data_line1 = [float(x) for x in data_line1]
-        konst = [123]
+        data_line0 = [str(data_line0[0])]
+        data_line1 = [str(x) for x in data_line1]
+        konst = [str(123)]
 
-        data_line = data_line0 + konst + data_line1
+        data_line = konst + data_line0 + data_line1
+
         data.append(data_line)
 
     data_all = np.array(data)
@@ -45,13 +46,14 @@ def sort_it(fileName, sequence):
 
     for j, y_line in enumerate(data):
         x_line = (str(data_all[j, 0]) + ';')
-        f2.write(x_line)
-        x_line2 = (str(data_all[j, 1]) + ',')
-        f2.write(x_line2)
+        x_line2 = (str(data_all[j, 1]) + ';')
+        line = x_line+x_line2
+        f2.write(line.replace('.',','))
+
         for i, item in enumerate(y_line):
-            f2.write(str(item))
+            f2.write(str(item).replace('.',','))
             if i < len(y_line[1:]):
-                f2.write(',')
+                f2.write(';')
             else:
                 f2.write('\n')
         # + str(line[1:]) + '\n').replace("'", '').replace('[', '').replace(']', '')

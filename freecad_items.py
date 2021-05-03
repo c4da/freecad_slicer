@@ -112,12 +112,13 @@ def findObjectViaLabel(documentName, label):
     objects = getObjects(documentName)
     for obj in objects:
         App.Console.PrintMessage(obj.Label + '\n')
+        print(obj.Label)
         if label in obj.Label:
             print('Found object: ', label)
-            App.Console.PrintMessage('Found glass object.\n')
+            App.Console.PrintMessage('Found object.\n')
             return obj
-    print('Glass was not found. Please, check the name of the glass model.\n')
-    App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
+    print('Axis was not found. Please, check the name of the projection axis in model.\n')
+    App.Console.PrintMessage('Axis was not found. Please, check the name of the projection axis in model.\n')
     return 1
 
 
@@ -125,36 +126,23 @@ def findObjectViaLabel(documentName, label):
 
 def findObjectViaName(documentName, name):
     objects = getObjects(documentName)
+    App.Console.PrintMessage('********')
+    App.Console.PrintMessage('\n\n\nlooking for ' + name + ' in ' + documentName + '\n')
     for obj in objects:
         App.Console.PrintMessage(obj.Name + '\n')
         if name in obj.Name:
-            print('Found glass object.')
             App.Console.PrintMessage('Found glass object.\n')
             return obj
-    print('Glass was not found. Please, check the name of the glass model.\n')
+
     App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
+    message_box = QtGui.QMessageBox()
+    message_box.setText(str('ERROR: wrong selection, glass object was not found!'))
+    message_box.addButton("OK", QtGui.QMessageBox.YesRole)
+    message_box.exec_()
     return 1
 
 
 # ---------------------------------------------------------------------------
-def findGlassObj(documentName):
-    objects = getObjects(documentName)
-    # label = 'glass'
-    App.Console.PrintMessage('Listing objects:')
-    for obj in objects:
-        App.Console.PrintMessage(obj.Label + '\n')
-        # if label in obj.Label:
-        if 'GLASS' in obj.Label.upper() or 'SKLO' in obj.Label.upper():
-            print('Found glass object.')
-            App.Console.PrintMessage('Found glass object.\n')
-            return obj
-        # elif label.upper() in obj.Label:
-        #     print('Found GLASS object.')
-        #     App.Console.PrintMessage('Found GLASS object.\n')
-        #     return obj
-    print('Glass was not found. Please, check the name of the glass model.\n')
-    App.Console.PrintMessage('Glass was not found. Please, check the name of the glass model.\n')
-    return 1
 
 
 # ---------------------------------------------------------------------------
@@ -442,7 +430,7 @@ def calculate(axisLabel, planes, origin_offset, sortCols, mainPath):
     ### ImportGui.insert(u"" + modelPath, "model1")
 
     Gui.activeDocument().activeView().viewDefaultOrientation()
-    showOnlyGlassObject(documentLabel)
+    #showOnlyGlassObject(documentLabel)
 
     glassObjectSelectedObject = findObjectViaName(documentLabel, glassObjectSelectedName)
     face = f.SubElementNames[0]
